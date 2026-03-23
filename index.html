@@ -717,6 +717,10 @@
       Fleet Registry
       <span class="nav-badge" id="navFleetCount">0</span>
     </button>
+    <button class="nav-tab" id="navSold" onclick="switchView('sold')">
+      Sold
+      <span class="nav-badge" id="navSoldCount">0</span>
+    </button>
   </div>
 
   <div class="header-actions">
@@ -738,13 +742,18 @@
   <div class="fleet-view-inner">
     <div class="fleet-toolbar">
       <div class="fleet-heading">Fleet Registry <span id="fleetSubtitle"></span></div>
-      <div class="fleet-filters">
-        <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
-        <button class="filter-btn" onclick="setFilter('active',this)">In Yard</button>
-        <button class="filter-btn" onclick="setFilter('sold',this)">Sold</button>
-      </div>
     </div>
     <div id="fleetContent"></div>
+  </div>
+</div>
+
+<!-- ══ SOLD CARS VIEW ══ -->
+<div class="view" id="viewSold">
+  <div class="fleet-view-inner">
+    <div class="fleet-toolbar">
+      <div class="fleet-heading">Sold Cars <span id="soldSubtitle"></span></div>
+    </div>
+    <div id="soldContent"></div>
   </div>
 </div>
 
@@ -893,7 +902,6 @@ function tryUnlock() {
 let state = { locations: ['Showroom', 'Lot A', 'Lot B'], cars: [] };
 let editingCarId = null;
 let managingLoc  = null;
-let fleetFilter  = 'all';
 let pendingImport = null;
 
 /* ─── PERSIST ─── */
@@ -907,11 +915,14 @@ function load() {
 
 /* ─── VIEWS ─── */
 function switchView(v) {
-  document.getElementById('viewDashboard').classList.toggle('active', v === 'dashboard');
-  document.getElementById('viewFleet').classList.toggle('active', v === 'fleet');
+  ['dashboard','fleet','sold'].forEach(id => {
+    document.getElementById('view' + id.charAt(0).toUpperCase() + id.slice(1)).classList.toggle('active', v === id);
+  });
   document.getElementById('navDash').classList.toggle('active', v === 'dashboard');
   document.getElementById('navFleet').classList.toggle('active', v === 'fleet');
+  document.getElementById('navSold').classList.toggle('active', v === 'sold');
   if (v === 'fleet') renderFleet();
+  if (v === 'sold') renderSold();
 }
 
 /* ─── EXPORT / IMPORT ─── */
@@ -986,14 +997,14 @@ function closeManageLocModal() {
 function buildManageModal() {
   const loc    = managingLoc;
   const active = state.cars.filter(c => c.location === loc && !c.sold).length;
-  const sold   = state.cars.filter(c => c.location === loc && c.sold).length;
-  const total  = active + sold;
+  const soldHere = state.cars.filter(c => c.location === loc && c.sold).length; // legacy only
+  const total  = active + soldHere;
 
   document.getElementById('mlTitle').textContent = loc;
   document.getElementById('mlRename').value = loc;
   document.getElementById('mlStatActive').textContent = active;
   document.getElementById('mlStatActive').className = 'loc-stat-num' + (active > 0 ? ' blocked' : '');
-  document.getElementById('mlStatSold').textContent = sold;
+  document.getElementById('mlStatSold').textContent = soldHere;
   document.getElementById('mlStatTotal').textContent = total;
 
   const deleteBtn = document.getElementById('mlDeleteBtn');
@@ -1001,36 +1012,28 @@ function buildManageModal() {
   const body = document.getElementById('mlDeleteBody');
 
   if (state.locations.length <= 1) {
-    body.innerHTML = `<div class="info-box">You cannot delete the last remaining location. Add another location first, then return here to delete this one.</div>`;
+    body.innerHTML = `<div class="info-box">You cannot delete the last remaining location. Add another location first.</div>`;
     return;
   }
 
   if (active > 0) {
     body.innerHTML = `<div class="warning-box">
       <strong>Deletion blocked — ${active} car${active>1?'s are':' is'} currently parked here.</strong><br>
-      You must move all active vehicles to another location before this location can be deleted.
+      Move all active vehicles to another location before deleting.
     </div>`;
     return;
   }
 
-  // Clear to delete — require typing the name exactly
+  // Safe to delete — simple checkbox confirm, no typing required
   body.innerHTML = `
     <div class="info-box">
-      ${sold > 0
-        ? `This location has <strong>${sold} sold record${sold>1?'s':''}</strong> which will be reassigned to another location.`
-        : 'This location is empty and safe to remove.'
-      }
-      <br>Type the location name exactly to unlock deletion.
+      This location has no active vehicles and is safe to remove.
+      ${soldHere > 0 ? `<br>${soldHere} sold record${soldHere>1?'s':''} will move to another location.` : ''}
     </div>
-    <div class="form-group">
-      <label class="form-label">Type <strong style="color:var(--accent);font-weight:700">${loc}</strong> to confirm</label>
-      <input class="form-input danger-focus" id="mlConfirmInput" placeholder="Type location name..." autocomplete="off" oninput="checkDeleteReady()">
-    </div>`;
-}
-
-function checkDeleteReady() {
-  const typed = (document.getElementById('mlConfirmInput')?.value || '').trim();
-  document.getElementById('mlDeleteBtn').disabled = (typed !== managingLoc);
+    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text2);margin-bottom:4px">
+      <input type="checkbox" id="mlDeleteCheck" onchange="document.getElementById('mlDeleteBtn').disabled=!this.checked" style="accent-color:var(--red);width:16px;height:16px;cursor:pointer">
+      I confirm I want to permanently delete <strong style="color:var(--accent);margin-left:4px">${loc}</strong>
+    </label>`;
 }
 
 function doRenameLocation() {
@@ -1055,10 +1058,9 @@ function doRenameLocation() {
 function doDeleteLocation() {
   if (!managingLoc) return;
   const active = state.cars.filter(c => c.location === managingLoc && !c.sold).length;
-  if (active > 0) { toast('Cannot delete — cars are still parked here'); return; }
-  const typed = (document.getElementById('mlConfirmInput')?.value || '').trim();
-  if (typed !== managingLoc) { toast('Location name does not match'); return; }
-  // Reassign sold records
+  if (active > 0) { toast('Cannot delete — active cars are still parked here'); return; }
+  const checked = document.getElementById('mlDeleteCheck')?.checked;
+  if (!checked) { toast('Please tick the confirmation box'); return; }
   const fallback = state.locations.find(l => l !== managingLoc) || state.locations[0];
   state.cars.forEach(c => { if (c.location === managingLoc) c.location = fallback; });
   state.locations = state.locations.filter(l => l !== managingLoc);
@@ -1118,15 +1120,24 @@ function markSold(id) {
   if (!car) return;
   car.sold = true;
   car.soldDate = new Date().toLocaleDateString('en-AU');
+  car.prevLocation = car.location; // remember where it was
+  car.location = null;             // remove from all lots
   save(); render();
   toast(`${car.brand} ${car.model} marked as sold`);
 }
 function restoreCar(id) {
   const car = state.cars.find(c => c.id === id);
   if (!car) return;
-  car.sold = false; delete car.soldDate;
+  // Pick a location to restore to — prefer where it was, else first lot
+  const target = (car.prevLocation && state.locations.includes(car.prevLocation))
+    ? car.prevLocation
+    : state.locations[0];
+  car.sold = false;
+  car.location = target;
+  delete car.soldDate;
+  delete car.prevLocation;
   save(); render();
-  toast('Restored to inventory');
+  toast(`Restored to ${target}`);
 }
 function deleteCar(id) {
   const car = state.cars.find(c => c.id === id);
@@ -1169,10 +1180,12 @@ function onDrop(e, loc) {
 
 /* ─── CAR CARD HTML ─── */
 function carCardHTML(car, mode) {
-  const inColumn = mode === 'column';
+  // mode: 'column' | 'fleet-active' | 'sold'
+  const inColumn  = mode === 'column';
+  const isSoldTab = mode === 'sold';
   const draggable = inColumn && !car.sold;
 
-  const locLabel = !inColumn
+  const locLabel = (mode === 'fleet-active' && car.location)
     ? `<div class="car-loc-label">📍 ${car.location}</div>` : '';
   const soldBadge = car.sold
     ? `<div class="sold-tag">SOLD${car.soldDate ? ' · '+car.soldDate : ''}</div>` : '';
@@ -1183,12 +1196,13 @@ function carCardHTML(car, mode) {
       <button class="btn btn-ghost btn-sm" onclick="openEditCar('${car.id}')">Edit</button>
       <button class="btn btn-danger btn-sm" onclick="markSold('${car.id}')">Mark Sold</button>
     </div>`;
-  } else if (car.sold) {
+  } else if (isSoldTab) {
     actions = `<div class="car-actions">
       <button class="btn btn-ghost btn-sm" onclick="restoreCar('${car.id}')">Restore</button>
       <button class="btn btn-danger btn-sm" onclick="deleteCar('${car.id}')">Delete</button>
     </div>`;
   } else {
+    // fleet-active
     actions = `<div class="car-actions">
       <button class="btn btn-ghost btn-sm" onclick="openEditCar('${car.id}')">Edit</button>
       <button class="btn btn-danger btn-sm" onclick="markSold('${car.id}')">Mark Sold</button>
@@ -1210,24 +1224,21 @@ function carCardHTML(car, mode) {
   </div>`;
 }
 
-/* ─── FLEET FILTER ─── */
-function setFilter(f, btn) {
-  fleetFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderFleet();
-}
-
 /* ─── RENDER ─── */
 function render() {
   renderTabs();
   renderColumns();
-  updateNavBadge();
-  if (document.getElementById('viewFleet').classList.contains('active')) renderFleet();
+  updateNavBadges();
+  const active = document.querySelector('.view.active');
+  if (active?.id === 'viewFleet') renderFleet();
+  if (active?.id === 'viewSold') renderSold();
 }
 
-function updateNavBadge() {
-  document.getElementById('navFleetCount').textContent = state.cars.length;
+function updateNavBadges() {
+  const active = state.cars.filter(c => !c.sold).length;
+  const sold   = state.cars.filter(c => c.sold).length;
+  document.getElementById('navFleetCount').textContent = active;
+  document.getElementById('navSoldCount').textContent  = sold;
 }
 
 function renderTabs() {
@@ -1239,6 +1250,18 @@ function renderTabs() {
       <span class="count-badge">${count}</span>
     </div>`;
   }).join('') + `<button class="add-loc-btn" onclick="openAddLoc()" title="Add Location">+</button>`;
+}
+
+function renderSold() {
+  const sold = state.cars.filter(c => c.sold);
+  document.getElementById('soldSubtitle').textContent = `${sold.length} vehicle${sold.length!==1?'s':''}`;
+  updateNavBadges();
+  const content = document.getElementById('soldContent');
+  if (!sold.length) {
+    content.innerHTML = `<div class="empty-fleet"><div class="em-icon">✅</div>No sold cars yet.</div>`;
+    return;
+  }
+  content.innerHTML = `<div class="fleet-grid">${sold.map(c => carCardHTML(c,'sold')).join('')}</div>`;
 }
 
 function renderColumns() {
@@ -1267,32 +1290,26 @@ function renderColumns() {
 
 function renderFleet() {
   const active = state.cars.filter(c => !c.sold);
-  const sold   = state.cars.filter(c => c.sold);
-  const total  = state.cars.length;
+  const total  = active.length;
   document.getElementById('fleetSubtitle').textContent = `${total} vehicle${total!==1?'s':''}`;
-  updateNavBadge();
-
+  updateNavBadges();
   const content = document.getElementById('fleetContent');
-  const showActive = fleetFilter === 'all' || fleetFilter === 'active';
-  const showSold   = fleetFilter === 'all' || fleetFilter === 'sold';
-
-  if (total === 0) {
-    content.innerHTML = `<div class="empty-fleet"><div class="em-icon">🚗</div>No cars yet.<br>Click <strong>+ Add Car</strong> to get started.</div>`;
+  if (!total) {
+    content.innerHTML = `<div class="empty-fleet"><div class="em-icon">🚗</div>No cars in inventory.<br>Click <strong>+ Add Car</strong> to get started.</div>`;
     return;
   }
-
+  // Group by location
+  const byLoc = {};
+  active.forEach(c => {
+    const k = c.location || 'Unknown';
+    if (!byLoc[k]) byLoc[k] = [];
+    byLoc[k].push(c);
+  });
   let html = '';
-  if (showActive && active.length) {
-    html += `<div class="fleet-section-title"><span>In Yard</span><span>${active.length}</span></div>`;
-    html += `<div class="fleet-grid">${active.map(c=>carCardHTML(c,'fleet-active')).join('')}</div>`;
-  }
-  if (showSold && sold.length) {
-    html += `<div class="fleet-section-title"><span>Sold</span><span>${sold.length}</span></div>`;
-    html += `<div class="fleet-grid">${sold.map(c=>carCardHTML(c,'fleet-sold')).join('')}</div>`;
-  }
-  if (!html) {
-    html = `<div class="empty-fleet"><div class="em-icon">🔍</div>No cars match this filter.</div>`;
-  }
+  Object.entries(byLoc).forEach(([loc, cars]) => {
+    html += `<div class="fleet-section-title"><span>${loc}</span><span>${cars.length}</span></div>`;
+    html += `<div class="fleet-grid">${cars.map(c=>carCardHTML(c,'fleet-active')).join('')}</div>`;
+  });
   content.innerHTML = html;
 }
 
