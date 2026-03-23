@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CarYard Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c25;
+    --surface2: #1f2435;
+    --border: #2d3347;
+    --accent: #e8a020;
+    --accent2: #c27d10;
+    --text: #e8e9ee;
+    --text2: #8890a8;
+    --text3: #555e78;
+    --red: #e84040;
+    --red-dim: rgba(232,64,64,.12);
+    --green: #2ec97e;
+    --col-w: 260px;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; overflow: hidden; }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 62px;
+    position: relative;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+  .logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    min-width: 160px;
+  }
+  .logo span { color: var(--text2); font-weight: 400; }
+
+  .nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .nav-tab {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 7px 20px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text3);
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-tab:hover { color: var(--text2); border-color: var(--border); }
+  .nav-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
+  .nav-badge {
+    font-size: 11px;
+    background: var(--border);
+    color: var(--text2);
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-weight: 700;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+
+  .header-actions { display: flex; gap: 10px; min-width: 260px; justify-content: flex-end; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #0f1117; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+  .btn-danger-solid { background: var(--red); color: #fff; border: 1px solid var(--red); }
+  .btn-danger-solid:hover { background: #c43030; border-color: #c43030; }
+  .btn-danger-solid:disabled { background: var(--border); color: var(--text3); border-color: var(--border); cursor: not-allowed; opacity: .6; }
+  .btn-sm { font-size: 11px; padding: 5px 12px; }
+
+  /* ── VIEWS ── */
+  .view { display: none; flex-direction: column; height: calc(100vh - 62px); }
+  .view.active { display: flex; }
+
+  /* ══════════════════════════════════════
+     DASHBOARD VIEW
+  ══════════════════════════════════════ */
+  .locations-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    overflow-x: auto;
+    flex-shrink: 0;
+    min-height: 56px;
+  }
+  .locations-header::-webkit-scrollbar { height: 4px; }
+  .locations-header::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .loc-tab {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 8px 18px 10px;
+    border-radius: 6px 6px 0 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    color: var(--text2);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .loc-tab .count-badge {
+    font-size: 11px;
+    background: var(--border);
+    color: var(--text2);
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-weight: 700;
+  }
+  .add-loc-btn {
+    padding: 8px 12px 10px;
+    border-radius: 6px 6px 0 0;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-bottom: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    transition: color .15s, border-color .15s;
+  }
+  .add-loc-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .columns-area {
+    flex: 1;
+    display: flex;
+    overflow-x: auto;
+    background: var(--bg);
+  }
+  .columns-area::-webkit-scrollbar { height: 6px; }
+  .columns-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .location-col {
+    min-width: var(--col-w);
+    width: var(--col-w);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .col-header {
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .col-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .col-count { font-size: 11px; color: var(--text3); font-weight: 600; margin-top: 2px; }
+  .col-manage-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    color: var(--text3);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 4px;
+    transition: all .15s;
+  }
+  .col-manage-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .drop-zone {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: background .15s;
+  }
+  .drop-zone::-webkit-scrollbar { width: 4px; }
+  .drop-zone::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .drop-zone.drag-over { background: rgba(232,160,32,.06); outline: 2px dashed var(--accent); outline-offset: -6px; border-radius: var(--radius); }
+  .drop-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text3);
+    font-size: 12px;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    pointer-events: none;
+    min-height: 60px;
+  }
+
+  /* ── CAR CARD ── */
+  .car-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    cursor: grab;
+    transition: border-color .15s, box-shadow .15s;
+    position: relative;
+    user-select: none;
+  }
+  .car-card:hover { border-color: #3d4560; box-shadow: 0 4px 16px rgba(0,0,0,.4); }
+  .car-card.dragging { opacity: .35; cursor: grabbing; }
+  .car-card.sold-card { opacity: .65; cursor: default; }
+  .car-brand {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text);
+    line-height: 1.1;
+    padding-right: 22px;
+  }
+  .car-model { font-size: 13px; color: var(--text2); margin-top: 2px; margin-bottom: 10px; }
+  .car-plate {
+    display: inline-block;
+    background: #e8e9ee;
+    color: #1a1d28;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    padding: 3px 10px 2px;
+    border-radius: 4px;
+    border: 1.5px solid #bcc0cc;
+    text-transform: uppercase;
+  }
+  .car-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    justify-content: flex-end;
+  }
+  .car-drag-handle {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: var(--text3);
+    font-size: 14px;
+    cursor: grab;
+  }
+  .car-loc-label {
+    font-size: 10px;
+    color: var(--text3);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+  .sold-tag {
+    display: inline-block;
+    background: rgba(46,201,126,.12);
+    color: var(--green);
+    font-size: 10px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-top: 8px;
+  }
+
+  /* ══════════════════════════════════════
+     FLEET REGISTRY VIEW
+  ══════════════════════════════════════ */
+  .fleet-view-inner {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 32px;
+  }
+  .fleet-view-inner::-webkit-scrollbar { width: 6px; }
+  .fleet-view-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .fleet-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .fleet-heading {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .fleet-heading span {
+    color: var(--text3);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 1px;
+  }
+  .fleet-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text3);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .filter-btn:hover { color: var(--text2); border-color: var(--text2); }
+  .filter-btn.active { background: var(--accent); color: #0f1117; border-color: var(--accent); }
+
+  .fleet-section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .fleet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .empty-fleet {
+    text-align: center;
+    padding: 60px 12px;
+    color: var(--text3);
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  .empty-fleet .em-icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* ══════════════════════════════════════
+     MODALS
+  ══════════════════════════════════════ */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.65);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 500;
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    width: 420px;
+    max-width: 96vw;
+    transform: translateY(12px);
+    transition: transform .2s;
+  }
+  .modal-overlay.show .modal { transform: translateY(0); }
+  .modal h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .modal h2.danger-title { color: var(--red); }
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text2);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input.danger-focus:focus { border-color: var(--red); }
+  .form-input::placeholder { color: var(--text3); }
+  .form-select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color .15s;
+    appearance: none;
+    cursor: pointer;
+  }
+  .form-select:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* manage location specifics */
+  .loc-stat-row { display: flex; gap: 12px; margin-bottom: 20px; }
+  .loc-stat {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    text-align: center;
+  }
+  .loc-stat-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+  }
+  .loc-stat-num.blocked { color: var(--red); }
+  .loc-stat-lbl {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+  .warning-box {
+    background: var(--red-dim);
+    border: 1px solid rgba(232,64,64,.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #f09090;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .warning-box strong { color: var(--red); }
+  .info-box {
+    background: rgba(232,160,32,.07);
+    border: 1px solid rgba(232,160,32,.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .info-box strong { color: var(--accent); }
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+  }
+  .section-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 12px;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    font-size: 13px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    white-space: nowrap;
+    z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="logo">CarYard <span>Manager</span></div>
+
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="navDash" onclick="switchView('dashboard')">Dashboard</button>
+    <button class="nav-tab" id="navFleet" onclick="switchView('fleet')">
+      Fleet Registry
+      <span class="nav-badge" id="navFleetCount">0</span>
+    </button>
+  </div>
+
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="exportData()">&#8595; Export</button>
+    <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">&#8593; Import</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+    <button class="btn btn-primary" onclick="openAddCar()">+ Add Car</button>
+  </div>
+</header>
+
+<!-- ══ DASHBOARD VIEW ══ -->
+<div class="view active" id="viewDashboard">
+  <div class="locations-header" id="locTabs"></div>
+  <div class="columns-area" id="colArea"></div>
+</div>
+
+<!-- ══ FLEET REGISTRY VIEW ══ -->
+<div class="view" id="viewFleet">
+  <div class="fleet-view-inner">
+    <div class="fleet-toolbar">
+      <div class="fleet-heading">Fleet Registry <span id="fleetSubtitle"></span></div>
+      <div class="fleet-filters">
+        <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('active',this)">In Yard</button>
+        <button class="filter-btn" onclick="setFilter('sold',this)">Sold</button>
+      </div>
+    </div>
+    <div id="fleetContent"></div>
+  </div>
+</div>
+
+<!-- ══ ADD / EDIT CAR MODAL ══ -->
+<div class="modal-overlay" id="addCarModal">
+  <div class="modal">
+    <h2 id="modalTitle">Add Car</h2>
+    <div class="form-group">
+      <label class="form-label">Brand</label>
+      <input class="form-input" id="fBrand" placeholder="e.g. Toyota">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Model</label>
+      <input class="form-input" id="fModel" placeholder="e.g. Landcruiser">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Number Plate</label>
+      <input class="form-input" id="fPlate" placeholder="e.g. ABC 123" style="text-transform:uppercase">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Location</label>
+      <select class="form-select" id="fLocation"></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeCarModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCar()">Save Car</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD LOCATION MODAL ══ -->
+<div class="modal-overlay" id="addLocModal">
+  <div class="modal">
+    <h2>Add Location</h2>
+    <div class="form-group">
+      <label class="form-label">Location Name</label>
+      <input class="form-input" id="fLocName" placeholder="e.g. Lot A, Showroom, Service Bay">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeLocModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLocation()">Add Location</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MANAGE LOCATION MODAL ══ -->
+<div class="modal-overlay" id="manageLocModal">
+  <div class="modal" style="width:460px;max-width:96vw">
+    <h2 id="mlTitle">Manage Location</h2>
+
+    <div class="loc-stat-row">
+      <div class="loc-stat">
+        <div class="loc-stat-num" id="mlStatActive">0</div>
+        <div class="loc-stat-lbl">Cars in yard</div>
+      </div>
+      <div class="loc-stat">
+        <div class="loc-stat-num" id="mlStatSold">0</div>
+        <div class="loc-stat-lbl">Sold from here</div>
+      </div>
+      <div class="loc-stat">
+        <div class="loc-stat-num" id="mlStatTotal">0</div>
+        <div class="loc-stat-lbl">Total records</div>
+      </div>
+    </div>
+
+    <!-- Rename -->
+    <div class="section-sub">Rename Location</div>
+    <div class="form-group">
+      <input class="form-input" id="mlRename" placeholder="New name...">
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+      <button class="btn btn-ghost btn-sm" onclick="doRenameLocation()">Apply Rename</button>
+    </div>
+
+    <hr class="section-divider">
+
+    <!-- Delete -->
+    <div class="section-sub" style="color:var(--red)">Delete Location</div>
+    <div id="mlDeleteBody"></div>
+
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="closeManageLocModal()">Close</button>
+      <button class="btn btn-danger-solid btn-sm" id="mlDeleteBtn" onclick="doDeleteLocation()" disabled>Delete Location</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ IMPORT CONFIRM MODAL ══ -->
+<div class="modal-overlay" id="importConfirmModal">
+  <div class="modal" style="width:380px">
+    <h2 class="danger-title">Replace All Data?</h2>
+    <p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:20px">
+      This will overwrite your entire current inventory with the imported backup. This cannot be undone — make sure you have exported a copy of the current data first.
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('importConfirmModal').classList.remove('show')">Cancel</button>
+      <button class="btn btn-danger-solid" id="importConfirmBtn">Yes, Replace Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─── STATE ─── */
+let state = { locations: ['Showroom', 'Lot A', 'Lot B'], cars: [] };
+let editingCarId = null;
+let managingLoc  = null;
+let fleetFilter  = 'all';
+let pendingImport = null;
+
+/* ─── PERSIST ─── */
+function save() { localStorage.setItem('caryard_v3', JSON.stringify(state)); }
+function load() {
+  try {
+    const raw = localStorage.getItem('caryard_v3');
+    if (raw) state = JSON.parse(raw);
+  } catch(e) {}
+}
+
+/* ─── VIEWS ─── */
+function switchView(v) {
+  document.getElementById('viewDashboard').classList.toggle('active', v === 'dashboard');
+  document.getElementById('viewFleet').classList.toggle('active', v === 'fleet');
+  document.getElementById('navDash').classList.toggle('active', v === 'dashboard');
+  document.getElementById('navFleet').classList.toggle('active', v === 'fleet');
+  if (v === 'fleet') renderFleet();
+}
+
+/* ─── EXPORT / IMPORT ─── */
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'caryard-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  toast('Backup exported ✓');
+}
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.locations && data.cars) {
+        pendingImport = data;
+        document.getElementById('importConfirmModal').classList.add('show');
+      } else { toast('Invalid backup file'); }
+    } catch { toast('Could not read file'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+document.getElementById('importConfirmBtn').onclick = () => {
+  if (pendingImport) { state = pendingImport; save(); render(); toast('Data imported ✓'); }
+  document.getElementById('importConfirmModal').classList.remove('show');
+  pendingImport = null;
+};
+
+/* ─── TOAST ─── */
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+/* ─── ADD LOCATION ─── */
+function openAddLoc() {
+  document.getElementById('fLocName').value = '';
+  document.getElementById('addLocModal').classList.add('show');
+  setTimeout(() => document.getElementById('fLocName').focus(), 80);
+}
+function closeLocModal() { document.getElementById('addLocModal').classList.remove('show'); }
+function saveLocation() {
+  const name = document.getElementById('fLocName').value.trim();
+  if (!name) { toast('Enter a location name'); return; }
+  if (state.locations.map(l=>l.toLowerCase()).includes(name.toLowerCase())) {
+    toast('Location already exists'); return;
+  }
+  state.locations.push(name);
+  save(); render(); closeLocModal();
+  toast('Location added: ' + name);
+}
+
+/* ─── MANAGE LOCATION ─── */
+function openManageLoc(loc) {
+  managingLoc = loc;
+  buildManageModal();
+  document.getElementById('manageLocModal').classList.add('show');
+}
+function closeManageLocModal() {
+  document.getElementById('manageLocModal').classList.remove('show');
+  managingLoc = null;
+}
+
+function buildManageModal() {
+  const loc    = managingLoc;
+  const active = state.cars.filter(c => c.location === loc && !c.sold).length;
+  const sold   = state.cars.filter(c => c.location === loc && c.sold).length;
+  const total  = active + sold;
+
+  document.getElementById('mlTitle').textContent = loc;
+  document.getElementById('mlRename').value = loc;
+  document.getElementById('mlStatActive').textContent = active;
+  document.getElementById('mlStatActive').className = 'loc-stat-num' + (active > 0 ? ' blocked' : '');
+  document.getElementById('mlStatSold').textContent = sold;
+  document.getElementById('mlStatTotal').textContent = total;
+
+  const deleteBtn = document.getElementById('mlDeleteBtn');
+  deleteBtn.disabled = true;
+  const body = document.getElementById('mlDeleteBody');
+
+  if (state.locations.length <= 1) {
+    body.innerHTML = `<div class="info-box">You cannot delete the last remaining location. Add another location first, then return here to delete this one.</div>`;
+    return;
+  }
+
+  if (active > 0) {
+    body.innerHTML = `<div class="warning-box">
+      <strong>Deletion blocked — ${active} car${active>1?'s are':' is'} currently parked here.</strong><br>
+      You must move all active vehicles to another location before this location can be deleted.
+    </div>`;
+    return;
+  }
+
+  // Clear to delete — require typing the name exactly
+  body.innerHTML = `
+    <div class="info-box">
+      ${sold > 0
+        ? `This location has <strong>${sold} sold record${sold>1?'s':''}</strong> which will be reassigned to another location.`
+        : 'This location is empty and safe to remove.'
+      }
+      <br>Type the location name exactly to unlock deletion.
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type <strong style="color:var(--accent);font-weight:700">${loc}</strong> to confirm</label>
+      <input class="form-input danger-focus" id="mlConfirmInput" placeholder="Type location name..." autocomplete="off" oninput="checkDeleteReady()">
+    </div>`;
+}
+
+function checkDeleteReady() {
+  const typed = (document.getElementById('mlConfirmInput')?.value || '').trim();
+  document.getElementById('mlDeleteBtn').disabled = (typed !== managingLoc);
+}
+
+function doRenameLocation() {
+  const newName = document.getElementById('mlRename').value.trim();
+  if (!newName) { toast('Enter a new name'); return; }
+  if (newName === managingLoc) { toast('Name is the same'); return; }
+  if (state.locations.map(l=>l.toLowerCase()).includes(newName.toLowerCase())) {
+    toast('That name is already taken'); return;
+  }
+  const old = managingLoc;
+  state.cars.forEach(c => { if (c.location === old) c.location = newName; });
+  state.locations = state.locations.map(l => l === old ? newName : l);
+  managingLoc = newName;
+  document.getElementById('mlTitle').textContent = newName;
+  document.getElementById('mlRename').value = newName;
+  // Rebuild delete section with new name
+  buildManageModal();
+  save(); render();
+  toast(`Renamed "${old}" → "${newName}"`);
+}
+
+function doDeleteLocation() {
+  if (!managingLoc) return;
+  const active = state.cars.filter(c => c.location === managingLoc && !c.sold).length;
+  if (active > 0) { toast('Cannot delete — cars are still parked here'); return; }
+  const typed = (document.getElementById('mlConfirmInput')?.value || '').trim();
+  if (typed !== managingLoc) { toast('Location name does not match'); return; }
+  // Reassign sold records
+  const fallback = state.locations.find(l => l !== managingLoc) || state.locations[0];
+  state.cars.forEach(c => { if (c.location === managingLoc) c.location = fallback; });
+  state.locations = state.locations.filter(l => l !== managingLoc);
+  const deleted = managingLoc;
+  closeManageLocModal();
+  save(); render();
+  toast(`"${deleted}" deleted`);
+}
+
+/* ─── CARS ─── */
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function openAddCar() {
+  editingCarId = null;
+  document.getElementById('modalTitle').textContent = 'Add Car';
+  ['fBrand','fModel','fPlate'].forEach(id => document.getElementById(id).value = '');
+  populateLocSelect();
+  document.getElementById('addCarModal').classList.add('show');
+  setTimeout(() => document.getElementById('fBrand').focus(), 80);
+}
+function openEditCar(id) {
+  const car = state.cars.find(c => c.id === id);
+  if (!car) return;
+  editingCarId = id;
+  document.getElementById('modalTitle').textContent = 'Edit Car';
+  document.getElementById('fBrand').value = car.brand;
+  document.getElementById('fModel').value = car.model;
+  document.getElementById('fPlate').value = car.plate;
+  populateLocSelect(car.location);
+  document.getElementById('addCarModal').classList.add('show');
+  setTimeout(() => document.getElementById('fBrand').focus(), 80);
+}
+function closeCarModal() { document.getElementById('addCarModal').classList.remove('show'); }
+function populateLocSelect(selected) {
+  const sel = document.getElementById('fLocation');
+  sel.innerHTML = state.locations.map(l =>
+    `<option value="${l}" ${l===selected?'selected':''}>${l}</option>`
+  ).join('');
+}
+function saveCar() {
+  const brand    = document.getElementById('fBrand').value.trim();
+  const model    = document.getElementById('fModel').value.trim();
+  const plate    = document.getElementById('fPlate').value.trim().toUpperCase();
+  const location = document.getElementById('fLocation').value;
+  if (!brand || !model || !plate) { toast('Please fill in all fields'); return; }
+  if (editingCarId) {
+    const car = state.cars.find(c => c.id === editingCarId);
+    if (car) { car.brand=brand; car.model=model; car.plate=plate; car.location=location; }
+  } else {
+    state.cars.push({ id:uid(), brand, model, plate, location, sold:false });
+  }
+  save(); render(); closeCarModal();
+  toast(editingCarId ? 'Car updated' : 'Car added ✓');
+}
+function markSold(id) {
+  const car = state.cars.find(c => c.id === id);
+  if (!car) return;
+  car.sold = true;
+  car.soldDate = new Date().toLocaleDateString('en-AU');
+  save(); render();
+  toast(`${car.brand} ${car.model} marked as sold`);
+}
+function restoreCar(id) {
+  const car = state.cars.find(c => c.id === id);
+  if (!car) return;
+  car.sold = false; delete car.soldDate;
+  save(); render();
+  toast('Restored to inventory');
+}
+function deleteCar(id) {
+  const car = state.cars.find(c => c.id === id);
+  if (!car) return;
+  if (!window.confirm(`Permanently delete ${car.brand} ${car.model} (${car.plate})?`)) return;
+  state.cars = state.cars.filter(c => c.id !== id);
+  save(); render();
+  toast('Car record deleted');
+}
+
+/* ─── DRAG & DROP ─── */
+let dragId = null;
+function onDragStart(e, id) {
+  dragId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => document.querySelector(`[data-id="${id}"]`)?.classList.add('dragging'), 0);
+}
+function onDragEnd() {
+  document.querySelectorAll('.car-card').forEach(c => c.classList.remove('dragging'));
+  document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+  dragId = null;
+}
+function onDragOver(e, loc) {
+  e.preventDefault();
+  document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function onDrop(e, loc) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (!dragId) return;
+  const car = state.cars.find(c => c.id === dragId);
+  if (car && car.location !== loc) {
+    car.location = loc; car.sold = false;
+    save(); render();
+    toast(`Moved to ${loc}`);
+  }
+}
+
+/* ─── CAR CARD HTML ─── */
+function carCardHTML(car, mode) {
+  const inColumn = mode === 'column';
+  const draggable = inColumn && !car.sold;
+
+  const locLabel = !inColumn
+    ? `<div class="car-loc-label">📍 ${car.location}</div>` : '';
+  const soldBadge = car.sold
+    ? `<div class="sold-tag">SOLD${car.soldDate ? ' · '+car.soldDate : ''}</div>` : '';
+
+  let actions = '';
+  if (inColumn) {
+    actions = `<div class="car-actions">
+      <button class="btn btn-ghost btn-sm" onclick="openEditCar('${car.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="markSold('${car.id}')">Mark Sold</button>
+    </div>`;
+  } else if (car.sold) {
+    actions = `<div class="car-actions">
+      <button class="btn btn-ghost btn-sm" onclick="restoreCar('${car.id}')">Restore</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteCar('${car.id}')">Delete</button>
+    </div>`;
+  } else {
+    actions = `<div class="car-actions">
+      <button class="btn btn-ghost btn-sm" onclick="openEditCar('${car.id}')">Edit</button>
+      <button class="btn btn-danger btn-sm" onclick="markSold('${car.id}')">Mark Sold</button>
+    </div>`;
+  }
+
+  return `<div
+    class="car-card${car.sold?' sold-card':''}"
+    data-id="${car.id}"
+    ${draggable?`draggable="true" ondragstart="onDragStart(event,'${car.id}')" ondragend="onDragEnd()"` : ''}
+  >
+    ${draggable ? '<div class="car-drag-handle">⠿</div>' : ''}
+    <div class="car-brand">${car.brand}</div>
+    <div class="car-model">${car.model}</div>
+    <div class="car-plate">${car.plate}</div>
+    ${locLabel}
+    ${soldBadge}
+    ${actions}
+  </div>`;
+}
+
+/* ─── FLEET FILTER ─── */
+function setFilter(f, btn) {
+  fleetFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFleet();
+}
+
+/* ─── RENDER ─── */
+function render() {
+  renderTabs();
+  renderColumns();
+  updateNavBadge();
+  if (document.getElementById('viewFleet').classList.contains('active')) renderFleet();
+}
+
+function updateNavBadge() {
+  document.getElementById('navFleetCount').textContent = state.cars.length;
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('locTabs');
+  tabs.innerHTML = state.locations.map(loc => {
+    const count = state.cars.filter(c => c.location === loc && !c.sold).length;
+    return `<div class="loc-tab">
+      <span>${loc}</span>
+      <span class="count-badge">${count}</span>
+    </div>`;
+  }).join('') + `<button class="add-loc-btn" onclick="openAddLoc()" title="Add Location">+</button>`;
+}
+
+function renderColumns() {
+  const area = document.getElementById('colArea');
+  area.innerHTML = state.locations.map(loc => {
+    const cars = state.cars.filter(c => c.location === loc && !c.sold);
+    const cards = cars.length
+      ? cars.map(c => carCardHTML(c, 'column')).join('')
+      : '<div class="drop-empty">Drop cars here</div>';
+    return `<div class="location-col">
+      <div class="col-header">
+        <div>
+          <div class="col-title">${loc}</div>
+          <div class="col-count">${cars.length} vehicle${cars.length!==1?'s':''}</div>
+        </div>
+        <button class="col-manage-btn" onclick="openManageLoc('${loc}')">Manage</button>
+      </div>
+      <div class="drop-zone"
+        ondragover="onDragOver(event,'${loc}')"
+        ondragleave="onDragLeave(event)"
+        ondrop="onDrop(event,'${loc}')"
+      >${cards}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderFleet() {
+  const active = state.cars.filter(c => !c.sold);
+  const sold   = state.cars.filter(c => c.sold);
+  const total  = state.cars.length;
+  document.getElementById('fleetSubtitle').textContent = `${total} vehicle${total!==1?'s':''}`;
+  updateNavBadge();
+
+  const content = document.getElementById('fleetContent');
+  const showActive = fleetFilter === 'all' || fleetFilter === 'active';
+  const showSold   = fleetFilter === 'all' || fleetFilter === 'sold';
+
+  if (total === 0) {
+    content.innerHTML = `<div class="empty-fleet"><div class="em-icon">🚗</div>No cars yet.<br>Click <strong>+ Add Car</strong> to get started.</div>`;
+    return;
+  }
+
+  let html = '';
+  if (showActive && active.length) {
+    html += `<div class="fleet-section-title"><span>In Yard</span><span>${active.length}</span></div>`;
+    html += `<div class="fleet-grid">${active.map(c=>carCardHTML(c,'fleet-active')).join('')}</div>`;
+  }
+  if (showSold && sold.length) {
+    html += `<div class="fleet-section-title"><span>Sold</span><span>${sold.length}</span></div>`;
+    html += `<div class="fleet-grid">${sold.map(c=>carCardHTML(c,'fleet-sold')).join('')}</div>`;
+  }
+  if (!html) {
+    html = `<div class="empty-fleet"><div class="em-icon">🔍</div>No cars match this filter.</div>`;
+  }
+  content.innerHTML = html;
+}
+
+/* ─── KEYBOARD ─── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeCarModal(); closeLocModal(); closeManageLocModal();
+    document.getElementById('importConfirmModal').classList.remove('show');
+  }
+  if (e.key === 'Enter' && document.getElementById('addCarModal').classList.contains('show')) saveCar();
+  if (e.key === 'Enter' && document.getElementById('addLocModal').classList.contains('show')) saveLocation();
+});
+
+/* ─── INIT ─── */
+load();
+if (state.cars.length === 0) {
+  state.cars = [
+    { id:uid(), brand:'Toyota',  model:'Landcruiser 200', plate:'WA 1234', location:'Showroom', sold:false },
+    { id:uid(), brand:'Ford',    model:'Ranger XLT',      plate:'WA 5678', location:'Showroom', sold:false },
+    { id:uid(), brand:'Mazda',   model:'CX-5 Touring',    plate:'WA 9012', location:'Lot A',    sold:false },
+    { id:uid(), brand:'Hyundai', model:'Tucson Elite',    plate:'WA 3456', location:'Lot B',    sold:false },
+  ];
+  save();
+}
+render();
+</script>
+</body>
+</html>
