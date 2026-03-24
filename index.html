@@ -6,698 +6,231 @@
 <title>CarYard Manager</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
-    --bg: #0f1117;
-    --surface: #181c25;
-    --surface2: #1f2435;
-    --border: #2d3347;
-    --accent: #e8a020;
-    --accent2: #c27d10;
-    --text: #e8e9ee;
-    --text2: #8890a8;
-    --text3: #555e78;
-    --red: #e84040;
-    --red-dim: rgba(232,64,64,.12);
-    --green: #2ec97e;
-    --col-w: 260px;
-    --radius: 10px;
+    --bg: #0f1117; --surface: #181c25; --surface2: #1f2435;
+    --border: #2d3347; --accent: #e8a020; --accent2: #c27d10;
+    --text: #e8e9ee; --text2: #8890a8; --text3: #555e78;
+    --red: #e84040; --red-dim: rgba(232,64,64,.12); --green: #2ec97e;
+    --col-w: 265px; --radius: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; overflow: hidden; }
 
-  /* ── PASSWORD LOCK ── */
-  #lockScreen {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    flex-direction: column;
-    gap: 0;
-  }
-  #lockScreen.unlocked { display: none; }
-  .lock-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 40px 44px;
-    width: 360px;
-    max-width: 92vw;
-    text-align: center;
-  }
-  .lock-logo {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 4px;
-  }
-  .lock-logo span { color: var(--text3); font-weight: 400; }
-  .lock-sub {
-    font-size: 12px;
-    color: var(--text3);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    font-family: 'Barlow Condensed', sans-serif;
-    margin-bottom: 32px;
-  }
-  .lock-icon {
-    font-size: 36px;
-    margin-bottom: 20px;
-    display: block;
-  }
-  .lock-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text2);
-    display: block;
-    text-align: left;
-    margin-bottom: 8px;
-  }
-  .lock-input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-size: 16px;
-    outline: none;
-    transition: border-color .15s;
-    text-align: center;
-    letter-spacing: 2px;
-    margin-bottom: 14px;
-  }
-  .lock-input:focus { border-color: var(--accent); }
-  .lock-input.shake {
-    animation: shake .35s ease;
-    border-color: var(--red);
-  }
-  @keyframes shake {
-    0%,100% { transform: translateX(0); }
-    20% { transform: translateX(-8px); }
-    40% { transform: translateX(8px); }
-    60% { transform: translateX(-6px); }
-    80% { transform: translateX(6px); }
-  }
-  .lock-error {
-    font-size: 12px;
-    color: var(--red);
-    margin-bottom: 14px;
-    min-height: 18px;
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .lock-btn {
-    width: 100%;
-    background: var(--accent);
-    color: #0f1117;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: background .15s;
-  }
-  .lock-btn:hover { background: var(--accent2); }
-  .lock-remember {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 16px;
-    font-size: 12px;
-    color: var(--text3);
-    cursor: pointer;
-    user-select: none;
-  }
-  .lock-remember input { accent-color: var(--accent); cursor: pointer; }
+  /* ── LOCK ── */
+  #lockScreen { position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999; }
+  #lockScreen.unlocked { display:none; }
+  .lock-box { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 44px;width:360px;max-width:92vw;text-align:center; }
+  .lock-logo { font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:4px; }
+  .lock-logo span { color:var(--text3);font-weight:400; }
+  .lock-sub { font-size:12px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;margin-bottom:32px; }
+  .lock-icon { font-size:36px;margin-bottom:20px;display:block; }
+  .lock-label { font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);display:block;text-align:left;margin-bottom:8px; }
+  .lock-input { width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--text);font-family:'Barlow',sans-serif;font-size:16px;outline:none;transition:border-color .15s;text-align:center;letter-spacing:2px;margin-bottom:14px; }
+  .lock-input:focus { border-color:var(--accent); }
+  .lock-input.shake { animation:shake .35s ease;border-color:var(--red); }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-6px)} 80%{transform:translateX(6px)} }
+  .lock-error { font-size:12px;color:var(--red);margin-bottom:14px;min-height:18px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase; }
+  .lock-btn { width:100%;background:var(--accent);color:#0f1117;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:12px;border-radius:8px;border:none;cursor:pointer;transition:background .15s; }
+  .lock-btn:hover { background:var(--accent2); }
+  .lock-remember { display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:12px;color:var(--text3);cursor:pointer;user-select:none; }
+  .lock-remember input { accent-color:var(--accent);cursor:pointer; }
 
   /* ── HEADER ── */
-  header {
-    background: var(--surface);
-    border-bottom: 2px solid var(--accent);
-    padding: 0 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 62px;
-    position: relative;
-    z-index: 100;
-    flex-shrink: 0;
-  }
-  .logo {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    min-width: 160px;
-  }
-  .logo span { color: var(--text2); font-weight: 400; }
-
-  .nav-tabs {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-  }
-  .nav-tab {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 7px 20px;
-    border-radius: 6px;
-    border: 1px solid transparent;
-    cursor: pointer;
-    background: transparent;
-    color: var(--text3);
-    transition: all .15s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .nav-tab:hover { color: var(--text2); border-color: var(--border); }
-  .nav-tab.active { background: var(--bg); color: var(--accent); border-color: var(--accent); }
-  .nav-badge {
-    font-size: 11px;
-    background: var(--border);
-    color: var(--text2);
-    border-radius: 10px;
-    padding: 1px 7px;
-    font-weight: 700;
-    font-family: 'Barlow Condensed', sans-serif;
-  }
-
-  .header-actions { display: flex; gap: 10px; min-width: 260px; justify-content: flex-end; }
+  header { background:var(--surface);border-bottom:2px solid var(--accent);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:62px;position:relative;z-index:100;flex-shrink:0; }
+  .logo { font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);min-width:160px; }
+  .logo span { color:var(--text2);font-weight:400; }
+  .nav-tabs { display:flex;align-items:center;gap:4px;position:absolute;left:50%;transform:translateX(-50%); }
+  .nav-tab { font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:7px 20px;border-radius:6px;border:1px solid transparent;cursor:pointer;background:transparent;color:var(--text3);transition:all .15s;display:flex;align-items:center;gap:8px; }
+  .nav-tab:hover { color:var(--text2);border-color:var(--border); }
+  .nav-tab.active { background:var(--bg);color:var(--accent);border-color:var(--accent); }
+  .nav-badge { font-size:11px;background:var(--border);color:var(--text2);border-radius:10px;padding:1px 7px;font-weight:700;font-family:'Barlow Condensed',sans-serif; }
+  .header-actions { display:flex;gap:10px;min-width:200px;justify-content:flex-end;align-items:center; }
+  .sync-dot { width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;transition:background .3s; }
+  .sync-dot.syncing { background:var(--accent);animation:pulse 1s infinite; }
+  .sync-dot.error { background:var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
   /* ── BUTTONS ── */
-  .btn {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    transition: all .15s;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-primary { background: var(--accent); color: #0f1117; }
-  .btn-primary:hover { background: var(--accent2); }
-  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); }
-  .btn-danger:hover { background: var(--red); color: #fff; }
-  .btn-danger-solid { background: var(--red); color: #fff; border: 1px solid var(--red); }
-  .btn-danger-solid:hover { background: #c43030; border-color: #c43030; }
-  .btn-danger-solid:disabled { background: var(--border); color: var(--text3); border-color: var(--border); cursor: not-allowed; opacity: .6; }
-  .btn-sm { font-size: 11px; padding: 5px 12px; }
+  .btn { font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:8px 16px;border-radius:6px;border:none;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px; }
+  .btn-primary { background:var(--accent);color:#0f1117; }
+  .btn-primary:hover { background:var(--accent2); }
+  .btn-ghost { background:transparent;color:var(--text2);border:1px solid var(--border); }
+  .btn-ghost:hover { border-color:var(--accent);color:var(--accent); }
+  .btn-danger { background:transparent;color:var(--red);border:1px solid var(--red); }
+  .btn-danger:hover { background:var(--red);color:#fff; }
+  .btn-danger-solid { background:var(--red);color:#fff;border:1px solid var(--red); }
+  .btn-danger-solid:hover { background:#c43030;border-color:#c43030; }
+  .btn-danger-solid:disabled { background:var(--border);color:var(--text3);border-color:var(--border);cursor:not-allowed;opacity:.6; }
+  .btn-sm { font-size:11px;padding:5px 12px; }
 
   /* ── VIEWS ── */
-  .view { display: none; flex-direction: column; height: calc(100vh - 62px); }
-  .view.active { display: flex; }
+  .view { display:none;flex-direction:column;height:calc(100vh - 62px); }
+  .view.active { display:flex; }
 
-  /* ══════════════════════════════════════
-     DASHBOARD VIEW
-  ══════════════════════════════════════ */
-  .locations-header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 24px 0;
-    display: flex;
-    align-items: flex-end;
-    gap: 12px;
-    overflow-x: auto;
-    flex-shrink: 0;
-    min-height: 56px;
-  }
-  .locations-header::-webkit-scrollbar { height: 4px; }
-  .locations-header::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  /* ── LOADING OVERLAY ── */
+  #loadingOverlay { position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:5000;flex-direction:column;gap:16px; }
+  #loadingOverlay.hidden { display:none; }
+  .loading-spinner { width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-text { font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--text3); }
 
-  .loc-tab {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 8px 18px 10px;
-    border-radius: 6px 6px 0 0;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-bottom: none;
-    color: var(--text2);
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .loc-tab .count-badge {
-    font-size: 11px;
-    background: var(--border);
-    color: var(--text2);
-    border-radius: 10px;
-    padding: 1px 7px;
-    font-weight: 700;
-  }
-  .add-loc-btn {
-    padding: 8px 12px 10px;
-    border-radius: 6px 6px 0 0;
-    background: transparent;
-    border: 1px dashed var(--border);
-    border-bottom: none;
-    color: var(--text3);
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
-    transition: color .15s, border-color .15s;
-  }
-  .add-loc-btn:hover { color: var(--accent); border-color: var(--accent); }
+  /* ── SETUP SCREEN ── */
+  #setupScreen { position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:4000; }
+  #setupScreen.hidden { display:none; }
+  .setup-box { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 40px;width:500px;max-width:94vw; }
+  .setup-box h2 { font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px; }
+  .setup-box p { font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:20px; }
+  .setup-step { background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.6; }
+  .setup-step strong { color:var(--accent); }
+  .setup-step code { background:var(--surface2);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;color:var(--text); }
+  .sql-block { background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;font-family:monospace;font-size:12px;color:#7dd3a8;line-height:1.7;white-space:pre;overflow-x:auto; }
 
-  .columns-area {
-    flex: 1;
-    display: flex;
-    overflow-x: auto;
-    background: var(--bg);
-  }
-  .columns-area::-webkit-scrollbar { height: 6px; }
-  .columns-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  /* ── DASHBOARD ── */
+  .locations-header { background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px 0;display:flex;align-items:flex-end;gap:12px;overflow-x:auto;flex-shrink:0;min-height:56px; }
+  .locations-header::-webkit-scrollbar { height:4px; }
+  .locations-header::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+  .loc-tab { font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:8px 18px 10px;border-radius:6px 6px 0 0;background:var(--surface2);border:1px solid var(--border);border-bottom:none;color:var(--text2);white-space:nowrap;display:flex;align-items:center;gap:8px; }
+  .loc-tab .count-badge { font-size:11px;background:var(--border);color:var(--text2);border-radius:10px;padding:1px 7px;font-weight:700; }
+  .add-loc-btn { padding:8px 12px 10px;border-radius:6px 6px 0 0;background:transparent;border:1px dashed var(--border);border-bottom:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;transition:color .15s,border-color .15s; }
+  .add-loc-btn:hover { color:var(--accent);border-color:var(--accent); }
 
-  .location-col {
-    min-width: var(--col-w);
-    width: var(--col-w);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
-  }
-  .col-header {
-    padding: 14px 14px 10px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .col-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--accent);
-  }
-  .col-count { font-size: 11px; color: var(--text3); font-weight: 600; margin-top: 2px; }
-  .col-manage-btn {
-    background: transparent;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    color: var(--text3);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 4px;
-    transition: all .15s;
-  }
-  .col-manage-btn:hover { color: var(--accent); border-color: var(--accent); }
-
-  .drop-zone {
-    flex: 1;
-    padding: 10px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    transition: background .15s;
-  }
-  .drop-zone::-webkit-scrollbar { width: 4px; }
-  .drop-zone::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .drop-zone.drag-over { background: rgba(232,160,32,.06); outline: 2px dashed var(--accent); outline-offset: -6px; border-radius: var(--radius); }
-  .drop-empty {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text3);
-    font-size: 12px;
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    pointer-events: none;
-    min-height: 60px;
-  }
+  .columns-area { flex:1;display:flex;overflow-x:auto;background:var(--bg); }
+  .columns-area::-webkit-scrollbar { height:6px; }
+  .columns-area::-webkit-scrollbar-thumb { background:var(--border);border-radius:3px; }
+  .location-col { min-width:var(--col-w);width:var(--col-w);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0; }
+  .col-header { padding:14px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between; }
+  .col-title { font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent); }
+  .col-count { font-size:11px;color:var(--text3);font-weight:600;margin-top:2px; }
+  .col-manage-btn { background:transparent;border:1px solid var(--border);cursor:pointer;color:var(--text3);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:4px;transition:all .15s; }
+  .col-manage-btn:hover { color:var(--accent);border-color:var(--accent); }
+  .drop-zone { flex:1;padding:10px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;transition:background .15s; }
+  .drop-zone::-webkit-scrollbar { width:4px; }
+  .drop-zone::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
+  .drop-zone.drag-over { background:rgba(232,160,32,.06);outline:2px dashed var(--accent);outline-offset:-6px;border-radius:var(--radius); }
+  .drop-empty { flex:1;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;pointer-events:none;min-height:60px; }
 
   /* ── CAR CARD ── */
-  .car-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    cursor: grab;
-    transition: border-color .15s, box-shadow .15s;
-    position: relative;
-    user-select: none;
-  }
-  .car-card:hover { border-color: #3d4560; box-shadow: 0 4px 16px rgba(0,0,0,.4); }
-  .car-card.dragging { opacity: .35; cursor: grabbing; }
-  .car-card.sold-card { opacity: .65; cursor: default; }
-  .car-brand {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 19px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--text);
-    line-height: 1.1;
-    padding-right: 22px;
-  }
-  .car-model { font-size: 13px; color: var(--text2); margin-top: 2px; margin-bottom: 10px; }
-  .car-plate {
-    display: inline-block;
-    background: #e8e9ee;
-    color: #1a1d28;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    padding: 3px 10px 2px;
-    border-radius: 4px;
-    border: 1.5px solid #bcc0cc;
-    text-transform: uppercase;
-  }
-  .car-actions {
-    display: flex;
-    gap: 6px;
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid var(--border);
-    justify-content: flex-end;
-  }
-  .car-drag-handle {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    color: var(--text3);
-    font-size: 14px;
-    cursor: grab;
-  }
-  .car-loc-label {
-    font-size: 10px;
-    color: var(--text3);
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-top: 8px;
-  }
-  .sold-tag {
-    display: inline-block;
-    background: rgba(46,201,126,.12);
-    color: var(--green);
-    font-size: 10px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 2px 7px;
-    border-radius: 3px;
-    margin-top: 8px;
-  }
+  .car-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:grab;transition:border-color .15s,box-shadow .15s;position:relative;user-select:none; }
+  .car-card:hover { border-color:#3d4560;box-shadow:0 4px 16px rgba(0,0,0,.4); }
+  .car-card.dragging { opacity:.35;cursor:grabbing; }
+  .car-card.sold-card { opacity:.65;cursor:default; }
+  .car-brand { font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text);line-height:1.1;padding-right:22px; }
+  .car-model { font-size:13px;color:var(--text2);margin-top:2px;margin-bottom:10px; }
+  .car-plate { display:inline-block;background:#e8e9ee;color:#1a1d28;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:3px;padding:3px 10px 2px;border-radius:4px;border:1.5px solid #bcc0cc;text-transform:uppercase; }
+  .car-actions { display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);justify-content:flex-end; }
+  .car-drag-handle { position:absolute;top:10px;right:10px;color:var(--text3);font-size:14px;cursor:grab; }
+  .car-loc-label { font-size:10px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;margin-top:8px; }
+  .sold-tag { display:inline-block;background:rgba(46,201,126,.12);color:var(--green);font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-top:8px; }
 
-  /* ══════════════════════════════════════
-     FLEET REGISTRY VIEW
-  ══════════════════════════════════════ */
-  .fleet-view-inner {
-    flex: 1;
-    overflow-y: auto;
-    padding: 28px 32px;
-  }
-  .fleet-view-inner::-webkit-scrollbar { width: 6px; }
-  .fleet-view-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  /* ── FLEET / SOLD VIEW ── */
+  .fleet-view-inner { flex:1;overflow-y:auto;padding:28px 32px; }
+  .fleet-view-inner::-webkit-scrollbar { width:6px; }
+  .fleet-view-inner::-webkit-scrollbar-thumb { background:var(--border);border-radius:3px; }
+  .fleet-toolbar { display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px; }
+  .fleet-heading { font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);display:flex;align-items:baseline;gap:10px; }
+  .fleet-heading span { color:var(--text3);font-size:14px;font-weight:400;letter-spacing:1px; }
+  .fleet-section-title { font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--text3);padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;justify-content:space-between; }
+  .fleet-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-bottom:32px; }
+  .empty-fleet { text-align:center;padding:60px 12px;color:var(--text3);font-size:15px;line-height:1.8; }
+  .empty-fleet .em-icon { font-size:36px;margin-bottom:12px; }
 
-  .fleet-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .fleet-heading {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-  }
-  .fleet-heading span {
-    color: var(--text3);
-    font-size: 14px;
-    font-weight: 400;
-    letter-spacing: 1px;
-  }
-  .fleet-filters { display: flex; gap: 8px; flex-wrap: wrap; }
-  .filter-btn {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 6px 16px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    background: transparent;
-    color: var(--text3);
-    cursor: pointer;
-    transition: all .15s;
-  }
-  .filter-btn:hover { color: var(--text2); border-color: var(--text2); }
-  .filter-btn.active { background: var(--accent); color: #0f1117; border-color: var(--accent); }
-
-  .fleet-section-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--text3);
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 14px;
-    display: flex;
-    justify-content: space-between;
-  }
-  .fleet-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-    gap: 12px;
-    margin-bottom: 32px;
-  }
-  .empty-fleet {
-    text-align: center;
-    padding: 60px 12px;
-    color: var(--text3);
-    font-size: 15px;
-    line-height: 1.8;
-  }
-  .empty-fleet .em-icon { font-size: 36px; margin-bottom: 12px; }
-
-  /* ══════════════════════════════════════
-     MODALS
-  ══════════════════════════════════════ */
-  .modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.65);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 500;
-    opacity: 0; pointer-events: none;
-    transition: opacity .2s;
-  }
-  .modal-overlay.show { opacity: 1; pointer-events: all; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 28px 32px;
-    width: 420px;
-    max-width: 96vw;
-    transform: translateY(12px);
-    transition: transform .2s;
-  }
-  .modal-overlay.show .modal { transform: translateY(0); }
-  .modal h2 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 20px;
-  }
-  .modal h2.danger-title { color: var(--red); }
-  .form-group { margin-bottom: 16px; }
-  .form-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text2);
-    display: block;
-    margin-bottom: 6px;
-  }
-  .form-input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-size: 15px;
-    outline: none;
-    transition: border-color .15s;
-  }
-  .form-input:focus { border-color: var(--accent); }
-  .form-input.danger-focus:focus { border-color: var(--red); }
-  .form-input::placeholder { color: var(--text3); }
-  .form-select {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 14px;
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-size: 15px;
-    outline: none;
-    transition: border-color .15s;
-    appearance: none;
-    cursor: pointer;
-  }
-  .form-select:focus { border-color: var(--accent); }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
-
-  /* manage location specifics */
-  .loc-stat-row { display: flex; gap: 12px; margin-bottom: 20px; }
-  .loc-stat {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    text-align: center;
-  }
-  .loc-stat-num {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 30px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1;
-  }
-  .loc-stat-num.blocked { color: var(--red); }
-  .loc-stat-lbl {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-top: 4px;
-  }
-  .warning-box {
-    background: var(--red-dim);
-    border: 1px solid rgba(232,64,64,.3);
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 13px;
-    color: #f09090;
-    line-height: 1.6;
-    margin-bottom: 16px;
-  }
-  .warning-box strong { color: var(--red); }
-  .info-box {
-    background: rgba(232,160,32,.07);
-    border: 1px solid rgba(232,160,32,.2);
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-size: 13px;
-    color: var(--text2);
-    line-height: 1.6;
-    margin-bottom: 16px;
-  }
-  .info-box strong { color: var(--accent); }
-  .section-divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 20px 0;
-  }
-  .section-sub {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-bottom: 12px;
-  }
+  /* ── MODALS ── */
+  .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s; }
+  .modal-overlay.show { opacity:1;pointer-events:all; }
+  .modal { background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 32px;width:420px;max-width:96vw;transform:translateY(12px);transition:transform .2s; }
+  .modal-overlay.show .modal { transform:translateY(0); }
+  .modal h2 { font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:20px; }
+  .modal h2.danger-title { color:var(--red); }
+  .form-group { margin-bottom:16px; }
+  .form-label { font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text2);display:block;margin-bottom:6px; }
+  .form-input { width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;outline:none;transition:border-color .15s; }
+  .form-input:focus { border-color:var(--accent); }
+  .form-input::placeholder { color:var(--text3); }
+  .form-select { width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;outline:none;transition:border-color .15s;appearance:none;cursor:pointer; }
+  .form-select:focus { border-color:var(--accent); }
+  .modal-actions { display:flex;gap:10px;justify-content:flex-end;margin-top:24px; }
+  .loc-stat-row { display:flex;gap:12px;margin-bottom:20px; }
+  .loc-stat { flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center; }
+  .loc-stat-num { font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:700;color:var(--text);line-height:1; }
+  .loc-stat-num.blocked { color:var(--red); }
+  .loc-stat-lbl { font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:4px; }
+  .warning-box { background:var(--red-dim);border:1px solid rgba(232,64,64,.3);border-radius:8px;padding:12px 16px;font-size:13px;color:#f09090;line-height:1.6;margin-bottom:16px; }
+  .warning-box strong { color:var(--red); }
+  .info-box { background:rgba(232,160,32,.07);border:1px solid rgba(232,160,32,.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:16px; }
+  .info-box strong { color:var(--accent); }
+  .section-divider { border:none;border-top:1px solid var(--border);margin:20px 0; }
+  .section-sub { font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:12px; }
 
   /* ── TOAST ── */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(8px);
-    background: var(--surface);
-    border: 1px solid var(--accent);
-    color: var(--text);
-    font-size: 13px;
-    padding: 10px 20px;
-    border-radius: 8px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .2s, transform .2s;
-    white-space: nowrap;
-    z-index: 1000;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast { position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--surface);border:1px solid var(--accent);color:var(--text);font-size:13px;padding:10px 20px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;z-index:1000; }
+  .toast.show { opacity:1;transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
 
-<!-- ══ LOCK SCREEN ══ -->
-<div id="lockScreen">
+<!-- ══ LOADING ══ -->
+<div id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Connecting to database...</div>
+</div>
+
+<!-- ══ SETUP SCREEN ══ -->
+<div id="setupScreen" class="hidden">
+  <div class="setup-box">
+    <h2>⚙️ Database Setup Required</h2>
+    <p>This app needs a free Supabase database. Follow these steps once, then paste your keys below.</p>
+    <div class="setup-step"><strong>1.</strong> Go to <strong>supabase.com</strong> → New project (free plan)</div>
+    <div class="setup-step"><strong>2.</strong> Once created, go to <strong>SQL Editor</strong> and run this:</div>
+    <div class="sql-block">create table locations (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  sort_order int default 0,
+  created_at timestamptz default now()
+);
+
+create table cars (
+  id uuid primary key default gen_random_uuid(),
+  brand text not null,
+  model text not null,
+  plate text not null,
+  location_id uuid references locations(id),
+  prev_location_id uuid references locations(id),
+  sold boolean default false,
+  sold_date text,
+  created_at timestamptz default now()
+);
+
+alter table locations enable row level security;
+alter table cars enable row level security;
+
+create policy "allow all" on locations for all using (true) with check (true);
+create policy "allow all" on cars for all using (true) with check (true);</div>
+    <div class="setup-step"><strong>3.</strong> Go to <strong>Project Settings → API</strong> and paste your keys below:</div>
+    <div class="form-group" style="margin-top:16px">
+      <label class="form-label">Project URL</label>
+      <input class="form-input" id="setupUrl" placeholder="https://xxxxxxxxxxxx.supabase.co">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Anon / Public Key</label>
+      <input class="form-input" id="setupKey" placeholder="eyJhbGci...">
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveSetup()">Connect Database</button>
+    </div>
+    <p style="margin-top:12px;font-size:12px;color:var(--text3)">These keys are stored only in your browser and never sent anywhere except Supabase.</p>
+  </div>
+</div>
+
+<!-- ══ LOCK ══ -->
+<div id="lockScreen" class="unlocked">
   <div class="lock-box">
     <div class="lock-logo">CarYard <span>Manager</span></div>
     <div class="lock-sub">Inventory System</div>
     <span class="lock-icon">🔒</span>
     <label class="lock-label">Access Password</label>
-    <input class="lock-input" id="lockInput" type="password" placeholder="••••••••••••"
-      onkeydown="if(event.key==='Enter')tryUnlock()">
+    <input class="lock-input" id="lockInput" type="password" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')tryUnlock()">
     <div class="lock-error" id="lockError"></div>
     <button class="lock-btn" onclick="tryUnlock()">Unlock</button>
     <label class="lock-remember">
@@ -710,34 +243,25 @@
 <!-- ══ HEADER ══ -->
 <header>
   <div class="logo">CarYard <span>Manager</span></div>
-
   <div class="nav-tabs">
     <button class="nav-tab active" id="navDash" onclick="switchView('dashboard')">Dashboard</button>
-    <button class="nav-tab" id="navFleet" onclick="switchView('fleet')">
-      Fleet Registry
-      <span class="nav-badge" id="navFleetCount">0</span>
-    </button>
-    <button class="nav-tab" id="navSold" onclick="switchView('sold')">
-      Sold
-      <span class="nav-badge" id="navSoldCount">0</span>
-    </button>
+    <button class="nav-tab" id="navFleet" onclick="switchView('fleet')">Fleet Registry <span class="nav-badge" id="navFleetCount">0</span></button>
+    <button class="nav-tab" id="navSold" onclick="switchView('sold')">Sold <span class="nav-badge" id="navSoldCount">0</span></button>
   </div>
-
   <div class="header-actions">
+    <div class="sync-dot" id="syncDot" title="Live sync active"></div>
     <button class="btn btn-ghost" onclick="exportData()">&#8595; Export</button>
-    <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">&#8593; Import</button>
-    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
     <button class="btn btn-primary" onclick="openAddCar()">+ Add Car</button>
   </div>
 </header>
 
-<!-- ══ DASHBOARD VIEW ══ -->
+<!-- ══ DASHBOARD ══ -->
 <div class="view active" id="viewDashboard">
   <div class="locations-header" id="locTabs"></div>
   <div class="columns-area" id="colArea"></div>
 </div>
 
-<!-- ══ FLEET REGISTRY VIEW ══ -->
+<!-- ══ FLEET ══ -->
 <div class="view" id="viewFleet">
   <div class="fleet-view-inner">
     <div class="fleet-toolbar">
@@ -747,7 +271,7 @@
   </div>
 </div>
 
-<!-- ══ SOLD CARS VIEW ══ -->
+<!-- ══ SOLD ══ -->
 <div class="view" id="viewSold">
   <div class="fleet-view-inner">
     <div class="fleet-toolbar">
@@ -757,26 +281,14 @@
   </div>
 </div>
 
-<!-- ══ ADD / EDIT CAR MODAL ══ -->
+<!-- ══ ADD/EDIT CAR ══ -->
 <div class="modal-overlay" id="addCarModal">
   <div class="modal">
     <h2 id="modalTitle">Add Car</h2>
-    <div class="form-group">
-      <label class="form-label">Brand</label>
-      <input class="form-input" id="fBrand" placeholder="e.g. Toyota">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Model</label>
-      <input class="form-input" id="fModel" placeholder="e.g. Landcruiser">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Number Plate</label>
-      <input class="form-input" id="fPlate" placeholder="e.g. ABC 123" style="text-transform:uppercase">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Location</label>
-      <select class="form-select" id="fLocation"></select>
-    </div>
+    <div class="form-group"><label class="form-label">Brand</label><input class="form-input" id="fBrand" placeholder="e.g. Toyota"></div>
+    <div class="form-group"><label class="form-label">Model</label><input class="form-input" id="fModel" placeholder="e.g. Landcruiser"></div>
+    <div class="form-group"><label class="form-label">Number Plate</label><input class="form-input" id="fPlate" placeholder="e.g. ABC 123" style="text-transform:uppercase"></div>
+    <div class="form-group"><label class="form-label">Location</label><select class="form-select" id="fLocation"></select></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeCarModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveCar()">Save Car</button>
@@ -784,14 +296,11 @@
   </div>
 </div>
 
-<!-- ══ ADD LOCATION MODAL ══ -->
+<!-- ══ ADD LOCATION ══ -->
 <div class="modal-overlay" id="addLocModal">
   <div class="modal">
     <h2>Add Location</h2>
-    <div class="form-group">
-      <label class="form-label">Location Name</label>
-      <input class="form-input" id="fLocName" placeholder="e.g. Lot A, Showroom, Service Bay">
-    </div>
+    <div class="form-group"><label class="form-label">Location Name</label><input class="form-input" id="fLocName" placeholder="e.g. Lot A, Showroom, Service Bay"></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeLocModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveLocation()">Add Location</button>
@@ -799,41 +308,22 @@
   </div>
 </div>
 
-<!-- ══ MANAGE LOCATION MODAL ══ -->
+<!-- ══ MANAGE LOCATION ══ -->
 <div class="modal-overlay" id="manageLocModal">
   <div class="modal" style="width:460px;max-width:96vw">
     <h2 id="mlTitle">Manage Location</h2>
-
     <div class="loc-stat-row">
-      <div class="loc-stat">
-        <div class="loc-stat-num" id="mlStatActive">0</div>
-        <div class="loc-stat-lbl">Cars in yard</div>
-      </div>
-      <div class="loc-stat">
-        <div class="loc-stat-num" id="mlStatSold">0</div>
-        <div class="loc-stat-lbl">Sold from here</div>
-      </div>
-      <div class="loc-stat">
-        <div class="loc-stat-num" id="mlStatTotal">0</div>
-        <div class="loc-stat-lbl">Total records</div>
-      </div>
+      <div class="loc-stat"><div class="loc-stat-num" id="mlStatActive">0</div><div class="loc-stat-lbl">Cars in yard</div></div>
+      <div class="loc-stat"><div class="loc-stat-num" id="mlStatTotal">0</div><div class="loc-stat-lbl">Total records</div></div>
     </div>
-
-    <!-- Rename -->
     <div class="section-sub">Rename Location</div>
-    <div class="form-group">
-      <input class="form-input" id="mlRename" placeholder="New name...">
-    </div>
+    <div class="form-group"><input class="form-input" id="mlRename" placeholder="New name..."></div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
       <button class="btn btn-ghost btn-sm" onclick="doRenameLocation()">Apply Rename</button>
     </div>
-
     <hr class="section-divider">
-
-    <!-- Delete -->
     <div class="section-sub" style="color:var(--red)">Delete Location</div>
     <div id="mlDeleteBody"></div>
-
     <div class="modal-actions" style="margin-top:12px">
       <button class="btn btn-ghost" onclick="closeManageLocModal()">Close</button>
       <button class="btn btn-danger-solid btn-sm" id="mlDeleteBtn" onclick="doDeleteLocation()" disabled>Delete Location</button>
@@ -841,56 +331,117 @@
   </div>
 </div>
 
-<!-- ══ IMPORT CONFIRM MODAL ══ -->
-<div class="modal-overlay" id="importConfirmModal">
-  <div class="modal" style="width:380px">
-    <h2 class="danger-title">Replace All Data?</h2>
-    <p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:20px">
-      This will overwrite your entire current inventory with the imported backup. This cannot be undone — make sure you have exported a copy of the current data first.
-    </p>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="document.getElementById('importConfirmModal').classList.remove('show')">Cancel</button>
-      <button class="btn btn-danger-solid" id="importConfirmBtn">Yes, Replace Data</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOAST -->
+<!-- ══ TOAST ══ -->
 <div class="toast" id="toast"></div>
 
 <script>
-/* ─── PASSWORD ─── */
-const PASS_HASH = '7a3f2b1c9e4d8f6a'; // hashed form of Curated2026
-function hashPass(p) {
-  // Simple but effective: djb2 hash converted to hex, not reversible from the page
-  let h = 5381;
-  for (let i = 0; i < p.length; i++) h = ((h << 5) + h) ^ p.charCodeAt(i);
-  return (h >>> 0).toString(16).padStart(8,'0');
-}
-// Pre-computed hash of 'Curated2026'
+/* ════════════════════════════════════════
+   CONFIG — paste your Supabase keys here
+   OR enter them in the setup screen
+════════════════════════════════════════ */
+const SUPABASE_URL = localStorage.getItem('cy_sb_url') || '';
+const SUPABASE_KEY = localStorage.getItem('cy_sb_key') || '';
+
+/* ── PASSWORD ── */
+function hashPass(p) { let h=5381; for(let i=0;i<p.length;i++) h=((h<<5)+h)^p.charCodeAt(i); return (h>>>0).toString(16).padStart(8,'0'); }
 const CORRECT_HASH = hashPass('Curated2026');
 
-function checkLock() {
+/* ── STATE ── */
+let db = null;
+let state = { locations: [], cars: [] };
+let editingCarId  = null;
+let managingLocId = null;
+let dragId        = null;
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+async function init() {
+  // Check password first
   const stored = localStorage.getItem('cy_unlocked');
   if (stored === CORRECT_HASH) {
     document.getElementById('lockScreen').classList.add('unlocked');
-    return true;
+    await connectDB();
+  } else {
+    // Show lock, connect DB in background
+    document.getElementById('lockScreen').classList.remove('unlocked');
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    connectDB(); // non-blocking
   }
-  return false;
 }
+
+async function connectDB() {
+  const url = localStorage.getItem('cy_sb_url');
+  const key = localStorage.getItem('cy_sb_key');
+
+  if (!url || !key) {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    document.getElementById('setupScreen').classList.remove('hidden');
+    return;
+  }
+
+  try {
+    db = supabase.createClient(url, key);
+    await loadAll();
+    subscribeRealtime();
+    document.getElementById('loadingOverlay').classList.add('hidden');
+  } catch(e) {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    document.getElementById('setupScreen').classList.remove('hidden');
+  }
+}
+
+function saveSetup() {
+  const url = document.getElementById('setupUrl').value.trim().replace(/\/$/, '');
+  const key = document.getElementById('setupKey').value.trim();
+  if (!url || !key) { toast('Enter both URL and key'); return; }
+  localStorage.setItem('cy_sb_url', url);
+  localStorage.setItem('cy_sb_key', key);
+  document.getElementById('setupScreen').classList.add('hidden');
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+  connectDB();
+}
+
+/* ── LOAD ALL ── */
+async function loadAll() {
+  setSyncing(true);
+  const [{ data: locs }, { data: cars }] = await Promise.all([
+    db.from('locations').select('*').order('sort_order').order('created_at'),
+    db.from('cars').select('*').order('created_at')
+  ]);
+  state.locations = locs || [];
+  state.cars      = cars || [];
+  setSyncing(false);
+  render();
+}
+
+/* ── REALTIME ── */
+function subscribeRealtime() {
+  db.channel('caryard-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'locations' }, () => loadAll())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'cars' },      () => loadAll())
+    .subscribe(status => {
+      if (status === 'SUBSCRIBED') setSyncing(false);
+    });
+}
+
+function setSyncing(on) {
+  document.getElementById('syncDot').className = 'sync-dot' + (on ? ' syncing' : '');
+}
+
+/* ── PASSWORD ── */
 function tryUnlock() {
   const val = document.getElementById('lockInput').value;
   const inp = document.getElementById('lockInput');
   const err = document.getElementById('lockError');
   if (hashPass(val) === CORRECT_HASH) {
-    if (document.getElementById('lockRemember').checked) {
-      localStorage.setItem('cy_unlocked', CORRECT_HASH);
-    }
+    if (document.getElementById('lockRemember').checked) localStorage.setItem('cy_unlocked', CORRECT_HASH);
     document.getElementById('lockScreen').classList.add('unlocked');
     err.textContent = '';
+    if (!db) connectDB();
   } else {
     inp.classList.remove('shake');
-    void inp.offsetWidth; // reflow to restart animation
+    void inp.offsetWidth;
     inp.classList.add('shake');
     err.textContent = 'Incorrect password';
     inp.value = '';
@@ -898,65 +449,22 @@ function tryUnlock() {
   }
 }
 
-
-let state = { locations: ['Showroom', 'Lot A', 'Lot B'], cars: [] };
-let editingCarId = null;
-let managingLoc  = null;
-let pendingImport = null;
-
-/* ─── PERSIST ─── */
-function save() { localStorage.setItem('caryard_v3', JSON.stringify(state)); }
-function load() {
-  try {
-    const raw = localStorage.getItem('caryard_v3');
-    if (raw) state = JSON.parse(raw);
-  } catch(e) {}
-}
-
-/* ─── VIEWS ─── */
-function switchView(v) {
-  ['dashboard','fleet','sold'].forEach(id => {
-    document.getElementById('view' + id.charAt(0).toUpperCase() + id.slice(1)).classList.toggle('active', v === id);
-  });
-  document.getElementById('navDash').classList.toggle('active', v === 'dashboard');
-  document.getElementById('navFleet').classList.toggle('active', v === 'fleet');
-  document.getElementById('navSold').classList.toggle('active', v === 'sold');
-  if (v === 'fleet') renderFleet();
-  if (v === 'sold') renderSold();
-}
-
-/* ─── EXPORT / IMPORT ─── */
+/* ── EXPORT ── */
 function exportData() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const out = {
+    exportDate: new Date().toISOString(),
+    locations: state.locations,
+    cars: state.cars
+  };
+  const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'caryard-backup-' + new Date().toISOString().slice(0,10) + '.json';
   a.click();
   toast('Backup exported ✓');
 }
-function importData(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (data.locations && data.cars) {
-        pendingImport = data;
-        document.getElementById('importConfirmModal').classList.add('show');
-      } else { toast('Invalid backup file'); }
-    } catch { toast('Could not read file'); }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-}
-document.getElementById('importConfirmBtn').onclick = () => {
-  if (pendingImport) { state = pendingImport; save(); render(); toast('Data imported ✓'); }
-  document.getElementById('importConfirmModal').classList.remove('show');
-  pendingImport = null;
-};
 
-/* ─── TOAST ─── */
+/* ── TOAST ── */
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -965,46 +473,61 @@ function toast(msg) {
   el._t = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
-/* ─── ADD LOCATION ─── */
+/* ── VIEWS ── */
+function switchView(v) {
+  ['dashboard','fleet','sold'].forEach(id => {
+    const cap = id.charAt(0).toUpperCase() + id.slice(1);
+    document.getElementById('view'+cap).classList.toggle('active', v===id);
+  });
+  document.getElementById('navDash').classList.toggle('active', v==='dashboard');
+  document.getElementById('navFleet').classList.toggle('active', v==='fleet');
+  document.getElementById('navSold').classList.toggle('active', v==='sold');
+  if (v==='fleet') renderFleet();
+  if (v==='sold')  renderSold();
+}
+
+/* ════════════════════════════════════════
+   LOCATIONS
+════════════════════════════════════════ */
 function openAddLoc() {
   document.getElementById('fLocName').value = '';
   document.getElementById('addLocModal').classList.add('show');
   setTimeout(() => document.getElementById('fLocName').focus(), 80);
 }
 function closeLocModal() { document.getElementById('addLocModal').classList.remove('show'); }
-function saveLocation() {
+
+async function saveLocation() {
   const name = document.getElementById('fLocName').value.trim();
   if (!name) { toast('Enter a location name'); return; }
-  if (state.locations.map(l=>l.toLowerCase()).includes(name.toLowerCase())) {
-    toast('Location already exists'); return;
-  }
-  state.locations.push(name);
-  save(); render(); closeLocModal();
+  if (state.locations.some(l => l.name.toLowerCase()===name.toLowerCase())) { toast('Location already exists'); return; }
+  setSyncing(true);
+  const { error } = await db.from('locations').insert({ name, sort_order: state.locations.length });
+  setSyncing(false);
+  if (error) { toast('Error adding location'); return; }
+  closeLocModal();
   toast('Location added: ' + name);
 }
 
-/* ─── MANAGE LOCATION ─── */
-function openManageLoc(loc) {
-  managingLoc = loc;
+function openManageLoc(id) {
+  managingLocId = id;
   buildManageModal();
   document.getElementById('manageLocModal').classList.add('show');
 }
 function closeManageLocModal() {
   document.getElementById('manageLocModal').classList.remove('show');
-  managingLoc = null;
+  managingLocId = null;
 }
 
 function buildManageModal() {
-  const loc    = managingLoc;
-  const active = state.cars.filter(c => c.location === loc && !c.sold).length;
-  const soldHere = state.cars.filter(c => c.location === loc && c.sold).length; // legacy only
-  const total  = active + soldHere;
+  const loc    = state.locations.find(l => l.id === managingLocId);
+  if (!loc) return;
+  const active = state.cars.filter(c => c.location_id === managingLocId && !c.sold).length;
+  const total  = state.cars.filter(c => c.location_id === managingLocId).length;
 
-  document.getElementById('mlTitle').textContent = loc;
-  document.getElementById('mlRename').value = loc;
+  document.getElementById('mlTitle').textContent = loc.name;
+  document.getElementById('mlRename').value = loc.name;
   document.getElementById('mlStatActive').textContent = active;
   document.getElementById('mlStatActive').className = 'loc-stat-num' + (active > 0 ? ' blocked' : '');
-  document.getElementById('mlStatSold').textContent = soldHere;
   document.getElementById('mlStatTotal').textContent = total;
 
   const deleteBtn = document.getElementById('mlDeleteBtn');
@@ -1012,67 +535,52 @@ function buildManageModal() {
   const body = document.getElementById('mlDeleteBody');
 
   if (state.locations.length <= 1) {
-    body.innerHTML = `<div class="info-box">You cannot delete the last remaining location. Add another location first.</div>`;
+    body.innerHTML = `<div class="info-box">You cannot delete the last remaining location. Add another first.</div>`;
     return;
   }
-
   if (active > 0) {
-    body.innerHTML = `<div class="warning-box">
-      <strong>Deletion blocked — ${active} car${active>1?'s are':' is'} currently parked here.</strong><br>
-      Move all active vehicles to another location before deleting.
-    </div>`;
+    body.innerHTML = `<div class="warning-box"><strong>Deletion blocked — ${active} car${active>1?'s are':' is'} currently parked here.</strong><br>Move all active vehicles to another location first.</div>`;
     return;
   }
-
-  // Safe to delete — simple checkbox confirm, no typing required
+  const soldCount = state.cars.filter(c => c.location_id === managingLocId && c.sold).length;
   body.innerHTML = `
-    <div class="info-box">
-      This location has no active vehicles and is safe to remove.
-      ${soldHere > 0 ? `<br>${soldHere} sold record${soldHere>1?'s':''} will move to another location.` : ''}
-    </div>
-    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text2);margin-bottom:4px">
+    <div class="info-box">This location has no active vehicles and is safe to remove.${soldCount>0?`<br>${soldCount} sold record${soldCount>1?'s':''} will be unlinked.`:''}</div>
+    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--text2)">
       <input type="checkbox" id="mlDeleteCheck" onchange="document.getElementById('mlDeleteBtn').disabled=!this.checked" style="accent-color:var(--red);width:16px;height:16px;cursor:pointer">
-      I confirm I want to permanently delete <strong style="color:var(--accent);margin-left:4px">${loc}</strong>
+      I confirm — permanently delete <strong style="color:var(--accent);margin-left:4px">${loc.name}</strong>
     </label>`;
 }
 
-function doRenameLocation() {
+async function doRenameLocation() {
+  const loc = state.locations.find(l => l.id === managingLocId);
+  if (!loc) return;
   const newName = document.getElementById('mlRename').value.trim();
-  if (!newName) { toast('Enter a new name'); return; }
-  if (newName === managingLoc) { toast('Name is the same'); return; }
-  if (state.locations.map(l=>l.toLowerCase()).includes(newName.toLowerCase())) {
-    toast('That name is already taken'); return;
-  }
-  const old = managingLoc;
-  state.cars.forEach(c => { if (c.location === old) c.location = newName; });
-  state.locations = state.locations.map(l => l === old ? newName : l);
-  managingLoc = newName;
-  document.getElementById('mlTitle').textContent = newName;
-  document.getElementById('mlRename').value = newName;
-  // Rebuild delete section with new name
-  buildManageModal();
-  save(); render();
-  toast(`Renamed "${old}" → "${newName}"`);
-}
-
-function doDeleteLocation() {
-  if (!managingLoc) return;
-  const active = state.cars.filter(c => c.location === managingLoc && !c.sold).length;
-  if (active > 0) { toast('Cannot delete — active cars are still parked here'); return; }
-  const checked = document.getElementById('mlDeleteCheck')?.checked;
-  if (!checked) { toast('Please tick the confirmation box'); return; }
-  const fallback = state.locations.find(l => l !== managingLoc) || state.locations[0];
-  state.cars.forEach(c => { if (c.location === managingLoc) c.location = fallback; });
-  state.locations = state.locations.filter(l => l !== managingLoc);
-  const deleted = managingLoc;
+  if (!newName) { toast('Enter a name'); return; }
+  if (newName === loc.name) { toast('Name unchanged'); return; }
+  if (state.locations.some(l => l.name.toLowerCase()===newName.toLowerCase() && l.id!==managingLocId)) { toast('Name already taken'); return; }
+  setSyncing(true);
+  await db.from('locations').update({ name: newName }).eq('id', managingLocId);
+  setSyncing(false);
+  toast(`Renamed to "${newName}"`);
   closeManageLocModal();
-  save(); render();
-  toast(`"${deleted}" deleted`);
 }
 
-/* ─── CARS ─── */
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+async function doDeleteLocation() {
+  if (!managingLocId) return;
+  const active = state.cars.filter(c => c.location_id === managingLocId && !c.sold).length;
+  if (active > 0) { toast('Move all cars first'); return; }
+  setSyncing(true);
+  // Null out location_id on any sold cars linked here
+  await db.from('cars').update({ location_id: null }).eq('location_id', managingLocId);
+  await db.from('locations').delete().eq('id', managingLocId);
+  setSyncing(false);
+  closeManageLocModal();
+  toast('Location deleted');
+}
 
+/* ════════════════════════════════════════
+   CARS
+════════════════════════════════════════ */
 function openAddCar() {
   editingCarId = null;
   document.getElementById('modalTitle').textContent = 'Add Car';
@@ -1089,67 +597,76 @@ function openEditCar(id) {
   document.getElementById('fBrand').value = car.brand;
   document.getElementById('fModel').value = car.model;
   document.getElementById('fPlate').value = car.plate;
-  populateLocSelect(car.location);
+  populateLocSelect(car.location_id);
   document.getElementById('addCarModal').classList.add('show');
   setTimeout(() => document.getElementById('fBrand').focus(), 80);
 }
 function closeCarModal() { document.getElementById('addCarModal').classList.remove('show'); }
-function populateLocSelect(selected) {
+
+function populateLocSelect(selectedId) {
   const sel = document.getElementById('fLocation');
   sel.innerHTML = state.locations.map(l =>
-    `<option value="${l}" ${l===selected?'selected':''}>${l}</option>`
+    `<option value="${l.id}" ${l.id===selectedId?'selected':''}>${l.name}</option>`
   ).join('');
 }
-function saveCar() {
-  const brand    = document.getElementById('fBrand').value.trim();
-  const model    = document.getElementById('fModel').value.trim();
-  const plate    = document.getElementById('fPlate').value.trim().toUpperCase();
-  const location = document.getElementById('fLocation').value;
+
+async function saveCar() {
+  const brand       = document.getElementById('fBrand').value.trim();
+  const model       = document.getElementById('fModel').value.trim();
+  const plate       = document.getElementById('fPlate').value.trim().toUpperCase();
+  const location_id = document.getElementById('fLocation').value;
   if (!brand || !model || !plate) { toast('Please fill in all fields'); return; }
+  setSyncing(true);
   if (editingCarId) {
-    const car = state.cars.find(c => c.id === editingCarId);
-    if (car) { car.brand=brand; car.model=model; car.plate=plate; car.location=location; }
+    await db.from('cars').update({ brand, model, plate, location_id }).eq('id', editingCarId);
   } else {
-    state.cars.push({ id:uid(), brand, model, plate, location, sold:false });
+    await db.from('cars').insert({ brand, model, plate, location_id, sold: false });
   }
-  save(); render(); closeCarModal();
+  setSyncing(false);
+  closeCarModal();
   toast(editingCarId ? 'Car updated' : 'Car added ✓');
 }
-function markSold(id) {
+
+async function markSold(id) {
   const car = state.cars.find(c => c.id === id);
   if (!car) return;
-  car.sold = true;
-  car.soldDate = new Date().toLocaleDateString('en-AU');
-  car.prevLocation = car.location; // remember where it was
-  car.location = null;             // remove from all lots
-  save(); render();
-  toast(`${car.brand} ${car.model} marked as sold`);
+  setSyncing(true);
+  await db.from('cars').update({
+    sold: true,
+    sold_date: new Date().toLocaleDateString('en-AU'),
+    prev_location_id: car.location_id,
+    location_id: null
+  }).eq('id', id);
+  setSyncing(false);
+  toast('Marked as sold');
 }
-function restoreCar(id) {
+
+async function restoreCar(id) {
   const car = state.cars.find(c => c.id === id);
   if (!car) return;
-  // Pick a location to restore to — prefer where it was, else first lot
-  const target = (car.prevLocation && state.locations.includes(car.prevLocation))
-    ? car.prevLocation
-    : state.locations[0];
-  car.sold = false;
-  car.location = target;
-  delete car.soldDate;
-  delete car.prevLocation;
-  save(); render();
-  toast(`Restored to ${target}`);
+  const target = (car.prev_location_id && state.locations.find(l=>l.id===car.prev_location_id))
+    ? car.prev_location_id
+    : (state.locations[0]?.id || null);
+  const loc = state.locations.find(l=>l.id===target);
+  setSyncing(true);
+  await db.from('cars').update({ sold: false, sold_date: null, location_id: target, prev_location_id: null }).eq('id', id);
+  setSyncing(false);
+  toast(`Restored to ${loc?.name || 'yard'}`);
 }
-function deleteCar(id) {
+
+async function deleteCar(id) {
   const car = state.cars.find(c => c.id === id);
   if (!car) return;
   if (!window.confirm(`Permanently delete ${car.brand} ${car.model} (${car.plate})?`)) return;
-  state.cars = state.cars.filter(c => c.id !== id);
-  save(); render();
-  toast('Car record deleted');
+  setSyncing(true);
+  await db.from('cars').delete().eq('id', id);
+  setSyncing(false);
+  toast('Car deleted');
 }
 
-/* ─── DRAG & DROP ─── */
-let dragId = null;
+/* ════════════════════════════════════════
+   DRAG & DROP
+════════════════════════════════════════ */
 function onDragStart(e, id) {
   dragId = id;
   e.dataTransfer.effectAllowed = 'move';
@@ -1160,83 +677,73 @@ function onDragEnd() {
   document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
   dragId = null;
 }
-function onDragOver(e, loc) {
-  e.preventDefault();
-  document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
-  e.currentTarget.classList.add('drag-over');
-}
+function onDragOver(e) { e.preventDefault(); document.querySelectorAll('.drop-zone').forEach(z=>z.classList.remove('drag-over')); e.currentTarget.classList.add('drag-over'); }
 function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
-function onDrop(e, loc) {
+async function onDrop(e, locId) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
   if (!dragId) return;
   const car = state.cars.find(c => c.id === dragId);
-  if (car && car.location !== loc) {
-    car.location = loc; car.sold = false;
-    save(); render();
-    toast(`Moved to ${loc}`);
-  }
+  if (!car || car.location_id === locId) return;
+  setSyncing(true);
+  await db.from('cars').update({ location_id: locId, sold: false, sold_date: null }).eq('id', dragId);
+  setSyncing(false);
+  const loc = state.locations.find(l => l.id === locId);
+  toast(`Moved to ${loc?.name || 'location'}`);
 }
 
-/* ─── CAR CARD HTML ─── */
+/* ════════════════════════════════════════
+   CAR CARD HTML
+════════════════════════════════════════ */
 function carCardHTML(car, mode) {
-  // mode: 'column' | 'fleet-active' | 'sold'
   const inColumn  = mode === 'column';
   const isSoldTab = mode === 'sold';
-  const draggable = inColumn && !car.sold;
+  const draggable = inColumn;
 
-  const locLabel = (mode === 'fleet-active' && car.location)
-    ? `<div class="car-loc-label">📍 ${car.location}</div>` : '';
+  const locName = state.locations.find(l=>l.id===car.location_id)?.name;
+  const locLabel = (mode==='fleet-active' && locName)
+    ? `<div class="car-loc-label">📍 ${locName}</div>` : '';
   const soldBadge = car.sold
-    ? `<div class="sold-tag">SOLD${car.soldDate ? ' · '+car.soldDate : ''}</div>` : '';
+    ? `<div class="sold-tag">SOLD${car.sold_date ? ' · '+car.sold_date : ''}</div>` : '';
 
   let actions = '';
-  if (inColumn) {
-    actions = `<div class="car-actions">
-      <button class="btn btn-ghost btn-sm" onclick="openEditCar('${car.id}')">Edit</button>
-      <button class="btn btn-danger btn-sm" onclick="markSold('${car.id}')">Mark Sold</button>
-    </div>`;
-  } else if (isSoldTab) {
+  if (isSoldTab) {
     actions = `<div class="car-actions">
       <button class="btn btn-ghost btn-sm" onclick="restoreCar('${car.id}')">Restore</button>
       <button class="btn btn-danger btn-sm" onclick="deleteCar('${car.id}')">Delete</button>
     </div>`;
   } else {
-    // fleet-active
     actions = `<div class="car-actions">
       <button class="btn btn-ghost btn-sm" onclick="openEditCar('${car.id}')">Edit</button>
       <button class="btn btn-danger btn-sm" onclick="markSold('${car.id}')">Mark Sold</button>
     </div>`;
   }
 
-  return `<div
-    class="car-card${car.sold?' sold-card':''}"
-    data-id="${car.id}"
-    ${draggable?`draggable="true" ondragstart="onDragStart(event,'${car.id}')" ondragend="onDragEnd()"` : ''}
-  >
-    ${draggable ? '<div class="car-drag-handle">⠿</div>' : ''}
+  return `<div class="car-card${car.sold?' sold-card':''}" data-id="${car.id}"
+    ${draggable?`draggable="true" ondragstart="onDragStart(event,'${car.id}')" ondragend="onDragEnd()"`:''}>
+    ${draggable?'<div class="car-drag-handle">⠿</div>':''}
     <div class="car-brand">${car.brand}</div>
     <div class="car-model">${car.model}</div>
     <div class="car-plate">${car.plate}</div>
-    ${locLabel}
-    ${soldBadge}
-    ${actions}
+    ${locLabel}${soldBadge}${actions}
   </div>`;
 }
 
-/* ─── RENDER ─── */
+/* ════════════════════════════════════════
+   RENDER
+════════════════════════════════════════ */
 function render() {
   renderTabs();
   renderColumns();
   updateNavBadges();
   const active = document.querySelector('.view.active');
-  if (active?.id === 'viewFleet') renderFleet();
-  if (active?.id === 'viewSold') renderSold();
+  if (active?.id==='viewFleet') renderFleet();
+  if (active?.id==='viewSold')  renderSold();
 }
 
 function updateNavBadges() {
-  const active = state.cars.filter(c => !c.sold).length;
-  const sold   = state.cars.filter(c => c.sold).length;
+  const active = state.cars.filter(c=>!c.sold).length;
+  const sold   = state.cars.filter(c=>c.sold).length;
   document.getElementById('navFleetCount').textContent = active;
   document.getElementById('navSoldCount').textContent  = sold;
 }
@@ -1244,98 +751,76 @@ function updateNavBadges() {
 function renderTabs() {
   const tabs = document.getElementById('locTabs');
   tabs.innerHTML = state.locations.map(loc => {
-    const count = state.cars.filter(c => c.location === loc && !c.sold).length;
-    return `<div class="loc-tab">
-      <span>${loc}</span>
-      <span class="count-badge">${count}</span>
-    </div>`;
+    const count = state.cars.filter(c=>c.location_id===loc.id&&!c.sold).length;
+    return `<div class="loc-tab"><span>${loc.name}</span><span class="count-badge">${count}</span></div>`;
   }).join('') + `<button class="add-loc-btn" onclick="openAddLoc()" title="Add Location">+</button>`;
-}
-
-function renderSold() {
-  const sold = state.cars.filter(c => c.sold);
-  document.getElementById('soldSubtitle').textContent = `${sold.length} vehicle${sold.length!==1?'s':''}`;
-  updateNavBadges();
-  const content = document.getElementById('soldContent');
-  if (!sold.length) {
-    content.innerHTML = `<div class="empty-fleet"><div class="em-icon">✅</div>No sold cars yet.</div>`;
-    return;
-  }
-  content.innerHTML = `<div class="fleet-grid">${sold.map(c => carCardHTML(c,'sold')).join('')}</div>`;
 }
 
 function renderColumns() {
   const area = document.getElementById('colArea');
+  if (!state.locations.length) {
+    area.innerHTML = `<div style="padding:40px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;font-size:13px">No locations yet — click + to add one</div>`;
+    return;
+  }
   area.innerHTML = state.locations.map(loc => {
-    const cars = state.cars.filter(c => c.location === loc && !c.sold);
+    const cars = state.cars.filter(c=>c.location_id===loc.id&&!c.sold);
     const cards = cars.length
-      ? cars.map(c => carCardHTML(c, 'column')).join('')
+      ? cars.map(c=>carCardHTML(c,'column')).join('')
       : '<div class="drop-empty">Drop cars here</div>';
     return `<div class="location-col">
       <div class="col-header">
         <div>
-          <div class="col-title">${loc}</div>
+          <div class="col-title">${loc.name}</div>
           <div class="col-count">${cars.length} vehicle${cars.length!==1?'s':''}</div>
         </div>
-        <button class="col-manage-btn" onclick="openManageLoc('${loc}')">Manage</button>
+        <button class="col-manage-btn" onclick="openManageLoc('${loc.id}')">Manage</button>
       </div>
-      <div class="drop-zone"
-        ondragover="onDragOver(event,'${loc}')"
-        ondragleave="onDragLeave(event)"
-        ondrop="onDrop(event,'${loc}')"
-      >${cards}</div>
+      <div class="drop-zone" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'${loc.id}')">${cards}</div>
     </div>`;
   }).join('');
 }
 
 function renderFleet() {
-  const active = state.cars.filter(c => !c.sold);
-  const total  = active.length;
-  document.getElementById('fleetSubtitle').textContent = `${total} vehicle${total!==1?'s':''}`;
+  const active = state.cars.filter(c=>!c.sold);
+  document.getElementById('fleetSubtitle').textContent = `${active.length} vehicle${active.length!==1?'s':''}`;
   updateNavBadges();
   const content = document.getElementById('fleetContent');
-  if (!total) {
-    content.innerHTML = `<div class="empty-fleet"><div class="em-icon">🚗</div>No cars in inventory.<br>Click <strong>+ Add Car</strong> to get started.</div>`;
+  if (!active.length) {
+    content.innerHTML = `<div class="empty-fleet"><div class="em-icon">🚗</div>No cars in inventory.</div>`;
     return;
   }
-  // Group by location
   const byLoc = {};
   active.forEach(c => {
-    const k = c.location || 'Unknown';
-    if (!byLoc[k]) byLoc[k] = [];
-    byLoc[k].push(c);
+    const name = state.locations.find(l=>l.id===c.location_id)?.name || 'Unassigned';
+    if (!byLoc[name]) byLoc[name] = [];
+    byLoc[name].push(c);
   });
-  let html = '';
-  Object.entries(byLoc).forEach(([loc, cars]) => {
-    html += `<div class="fleet-section-title"><span>${loc}</span><span>${cars.length}</span></div>`;
-    html += `<div class="fleet-grid">${cars.map(c=>carCardHTML(c,'fleet-active')).join('')}</div>`;
-  });
-  content.innerHTML = html;
+  content.innerHTML = Object.entries(byLoc).map(([name, cars]) =>
+    `<div class="fleet-section-title"><span>${name}</span><span>${cars.length}</span></div>
+     <div class="fleet-grid">${cars.map(c=>carCardHTML(c,'fleet-active')).join('')}</div>`
+  ).join('');
 }
 
-/* ─── KEYBOARD ─── */
+function renderSold() {
+  const sold = state.cars.filter(c=>c.sold);
+  document.getElementById('soldSubtitle').textContent = `${sold.length} vehicle${sold.length!==1?'s':''}`;
+  updateNavBadges();
+  const content = document.getElementById('soldContent');
+  content.innerHTML = sold.length
+    ? `<div class="fleet-grid">${sold.map(c=>carCardHTML(c,'sold')).join('')}</div>`
+    : `<div class="empty-fleet"><div class="em-icon">✅</div>No sold cars yet.</div>`;
+}
+
+/* ── KEYBOARD ── */
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    closeCarModal(); closeLocModal(); closeManageLocModal();
-    document.getElementById('importConfirmModal').classList.remove('show');
-  }
-  if (e.key === 'Enter' && document.getElementById('addCarModal').classList.contains('show')) saveCar();
-  if (e.key === 'Enter' && document.getElementById('addLocModal').classList.contains('show')) saveLocation();
+  if (e.key==='Escape') { closeCarModal(); closeLocModal(); closeManageLocModal(); }
+  if (e.key==='Enter' && document.getElementById('addCarModal').classList.contains('show')) saveCar();
+  if (e.key==='Enter' && document.getElementById('addLocModal').classList.contains('show')) saveLocation();
+  if (e.key==='Enter' && document.getElementById('lockScreen').classList.contains('unlocked')===false) tryUnlock();
 });
 
-/* ─── INIT ─── */
-checkLock();
-load();
-if (state.cars.length === 0) {
-  state.cars = [
-    { id:uid(), brand:'Toyota',  model:'Landcruiser 200', plate:'WA 1234', location:'Showroom', sold:false },
-    { id:uid(), brand:'Ford',    model:'Ranger XLT',      plate:'WA 5678', location:'Showroom', sold:false },
-    { id:uid(), brand:'Mazda',   model:'CX-5 Touring',    plate:'WA 9012', location:'Lot A',    sold:false },
-    { id:uid(), brand:'Hyundai', model:'Tucson Elite',    plate:'WA 3456', location:'Lot B',    sold:false },
-  ];
-  save();
-}
-render();
+/* ── START ── */
+init();
 </script>
 </body>
 </html>
