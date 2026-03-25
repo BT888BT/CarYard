@@ -76,17 +76,6 @@
   @keyframes spin { to { transform:rotate(360deg); } }
   .loading-text { font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--text3); }
 
-  /* ── SETUP SCREEN ── */
-  #setupScreen { position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:4000; }
-  #setupScreen.hidden { display:none; }
-  .setup-box { background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:36px 40px;width:500px;max-width:94vw; }
-  .setup-box h2 { font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px; }
-  .setup-box p { font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:20px; }
-  .setup-step { background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--text2);line-height:1.6; }
-  .setup-step strong { color:var(--accent); }
-  .setup-step code { background:var(--surface2);padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;color:var(--text); }
-  .sql-block { background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin:12px 0;font-family:monospace;font-size:12px;color:#7dd3a8;line-height:1.7;white-space:pre;overflow-x:auto; }
-
   /* ── DASHBOARD ── */
   .locations-header { background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px 0;display:flex;align-items:flex-end;gap:12px;overflow-x:auto;flex-shrink:0;min-height:56px; }
   .locations-header::-webkit-scrollbar { height:4px; }
@@ -174,53 +163,6 @@
 <div id="loadingOverlay">
   <div class="loading-spinner"></div>
   <div class="loading-text">Connecting to database...</div>
-</div>
-
-<!-- ══ SETUP SCREEN ══ -->
-<div id="setupScreen" class="hidden">
-  <div class="setup-box">
-    <h2>⚙️ Database Setup Required</h2>
-    <p>This app needs a free Supabase database. Follow these steps once, then paste your keys below.</p>
-    <div class="setup-step"><strong>1.</strong> Go to <strong>supabase.com</strong> → New project (free plan)</div>
-    <div class="setup-step"><strong>2.</strong> Once created, go to <strong>SQL Editor</strong> and run this:</div>
-    <div class="sql-block">create table locations (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  sort_order int default 0,
-  created_at timestamptz default now()
-);
-
-create table cars (
-  id uuid primary key default gen_random_uuid(),
-  brand text not null,
-  model text not null,
-  plate text not null,
-  location_id uuid references locations(id),
-  prev_location_id uuid references locations(id),
-  sold boolean default false,
-  sold_date text,
-  created_at timestamptz default now()
-);
-
-alter table locations enable row level security;
-alter table cars enable row level security;
-
-create policy "allow all" on locations for all using (true) with check (true);
-create policy "allow all" on cars for all using (true) with check (true);</div>
-    <div class="setup-step"><strong>3.</strong> Go to <strong>Project Settings → API</strong> and paste your keys below:</div>
-    <div class="form-group" style="margin-top:16px">
-      <label class="form-label">Project URL</label>
-      <input class="form-input" id="setupUrl" placeholder="https://xxxxxxxxxxxx.supabase.co">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Anon / Public Key</label>
-      <input class="form-input" id="setupKey" placeholder="eyJhbGci...">
-    </div>
-    <div style="display:flex;gap:10px;margin-top:8px">
-      <button class="btn btn-primary" style="flex:1" onclick="saveSetup()">Connect Database</button>
-    </div>
-    <p style="margin-top:12px;font-size:12px;color:var(--text3)">These keys are stored only in your browser and never sent anywhere except Supabase.</p>
-  </div>
 </div>
 
 <!-- ══ LOCK ══ -->
@@ -336,11 +278,11 @@ create policy "allow all" on cars for all using (true) with check (true);</div>
 
 <script>
 /* ════════════════════════════════════════
-   CONFIG — paste your Supabase keys here
-   OR enter them in the setup screen
+   CONFIG — your Supabase keys are set here
+   Everyone who opens this page uses these
 ════════════════════════════════════════ */
-const SUPABASE_URL = localStorage.getItem('cy_sb_url') || '';
-const SUPABASE_KEY = localStorage.getItem('cy_sb_key') || '';
+const SUPABASE_URL = 'PASTE_YOUR_PROJECT_URL_HERE';
+const SUPABASE_KEY = 'PASTE_YOUR_ANON_KEY_HERE';
 
 /* ── PASSWORD ── */
 function hashPass(p) { let h=5381; for(let i=0;i<p.length;i++) h=((h<<5)+h)^p.charCodeAt(i); return (h>>>0).toString(16).padStart(8,'0'); }
@@ -357,61 +299,47 @@ let dragId        = null;
    INIT
 ════════════════════════════════════════ */
 async function init() {
-  // Check password first
   const stored = localStorage.getItem('cy_unlocked');
   if (stored === CORRECT_HASH) {
     document.getElementById('lockScreen').classList.add('unlocked');
-    await connectDB();
   } else {
-    // Show lock, connect DB in background
     document.getElementById('lockScreen').classList.remove('unlocked');
-    document.getElementById('loadingOverlay').classList.add('hidden');
-    connectDB(); // non-blocking
   }
+  await connectDB();
 }
 
 async function connectDB() {
-  const url = localStorage.getItem('cy_sb_url');
-  const key = localStorage.getItem('cy_sb_key');
-
-  if (!url || !key) {
-    document.getElementById('loadingOverlay').classList.add('hidden');
-    document.getElementById('setupScreen').classList.remove('hidden');
-    return;
-  }
-
   try {
-    db = supabase.createClient(url, key);
+    db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     await loadAll();
     subscribeRealtime();
-    document.getElementById('loadingOverlay').classList.add('hidden');
   } catch(e) {
-    document.getElementById('loadingOverlay').classList.add('hidden');
-    document.getElementById('setupScreen').classList.remove('hidden');
+    console.error('DB connection error:', e);
+    document.getElementById('loadingOverlay').innerHTML =
+      `<div style="color:var(--red);font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:1px;text-align:center;padding:20px">
+        Connection failed.<br><span style="color:var(--text3);font-size:12px">Check your Supabase URL and key in the HTML file.</span>
+      </div>`;
   }
-}
-
-function saveSetup() {
-  const url = document.getElementById('setupUrl').value.trim().replace(/\/$/, '');
-  const key = document.getElementById('setupKey').value.trim();
-  if (!url || !key) { toast('Enter both URL and key'); return; }
-  localStorage.setItem('cy_sb_url', url);
-  localStorage.setItem('cy_sb_key', key);
-  document.getElementById('setupScreen').classList.add('hidden');
-  document.getElementById('loadingOverlay').classList.remove('hidden');
-  connectDB();
 }
 
 /* ── LOAD ALL ── */
 async function loadAll() {
   setSyncing(true);
-  const [{ data: locs }, { data: cars }] = await Promise.all([
+  const [locsRes, carsRes] = await Promise.all([
     db.from('locations').select('*').order('sort_order').order('created_at'),
     db.from('cars').select('*').order('created_at')
   ]);
-  state.locations = locs || [];
-  state.cars      = cars || [];
+  if (locsRes.error || carsRes.error) {
+    console.error('Load error:', locsRes.error || carsRes.error);
+    setSyncing(false);
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    toast('Database read error — check Supabase RLS policies');
+    return;
+  }
+  state.locations = locsRes.data || [];
+  state.cars      = carsRes.data || [];
   setSyncing(false);
+  document.getElementById('loadingOverlay').classList.add('hidden');
   render();
 }
 
