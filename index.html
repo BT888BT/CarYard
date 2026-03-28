@@ -310,7 +310,9 @@ async function init() {
 
 async function connectDB() {
   try {
-    db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: false }
+    });
     await loadAll();
     subscribeRealtime();
   } catch(e) {
