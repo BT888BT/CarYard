@@ -166,7 +166,7 @@
 </div>
 
 <!-- ══ LOCK ══ -->
-<div id="lockScreen" class="unlocked">
+<div id="lockScreen">
   <div class="lock-box">
     <div class="lock-logo">CarYard <span>Manager</span></div>
     <div class="lock-sub">Inventory System</div>
@@ -281,12 +281,29 @@
    CONFIG — your Supabase keys are set here
    Everyone who opens this page uses these
 ════════════════════════════════════════ */
-const SUPABASE_URL = 'https://fpnjwqsvcpxpwypghohi.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_ZXK8O-Q6mUAUcJ-fGYRV2Q_x47nLwZ8';
+/* ═══════════════════════════════════════════════════════
+   INSTRUCTIONS: Replace these with YOUR Supabase values
+   1. Go to Supabase → Settings → API
+   2. Copy "Project URL" and paste below
+   3. Copy "anon public" key (starts with eyJ...) and paste below
+   ═══════════════════════════════════════════════════════ */
+const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+const SUPABASE_KEY = 'eyJ_YOUR_ANON_KEY_HERE';
 
-/* ── PASSWORD ── */
-function hashPass(p) { let h=5381; for(let i=0;i<p.length;i++) h=((h<<5)+h)^p.charCodeAt(i); return (h>>>0).toString(16).padStart(8,'0'); }
-const CORRECT_HASH = hashPass('Curated2026');
+/* ── PASSWORD ──
+   The hash below is a pre-computed SHA-256 of your chosen password.
+   To generate a new hash, open your browser console and run:
+     crypto.subtle.digest('SHA-256', new TextEncoder().encode('YourPasswordHere'))
+       .then(b => console.log(Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')))
+   Then paste the result into CORRECT_HASH below.
+   This way your password NEVER appears in the source code.
+*/
+async function hashPass(p) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p));
+  return Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2,'0')).join('');
+}
+// Default hash = SHA-256 of "Curated2026" — change this to your own!
+const CORRECT_HASH = 'GENERATE_YOUR_HASH_AND_PASTE_HERE';
 
 /* ── STATE ── */
 let db = null;
@@ -302,10 +319,11 @@ async function init() {
   const stored = localStorage.getItem('cy_unlocked');
   if (stored === CORRECT_HASH) {
     document.getElementById('lockScreen').classList.add('unlocked');
+    await connectDB();
   } else {
     document.getElementById('lockScreen').classList.remove('unlocked');
+    document.getElementById('loadingOverlay').classList.add('hidden');
   }
-  await connectDB();
 }
 
 async function connectDB() {
@@ -360,11 +378,12 @@ function setSyncing(on) {
 }
 
 /* ── PASSWORD ── */
-function tryUnlock() {
+async function tryUnlock() {
   const val = document.getElementById('lockInput').value;
   const inp = document.getElementById('lockInput');
   const err = document.getElementById('lockError');
-  if (hashPass(val) === CORRECT_HASH) {
+  const hashed = await hashPass(val);
+  if (hashed === CORRECT_HASH) {
     if (document.getElementById('lockRemember').checked) localStorage.setItem('cy_unlocked', CORRECT_HASH);
     document.getElementById('lockScreen').classList.add('unlocked');
     err.textContent = '';
