@@ -160,7 +160,7 @@
 <body>
 
 <!-- ══ LOADING ══ -->
-<div id="loadingOverlay">
+<div id="loadingOverlay" class="hidden">
   <div class="loading-spinner"></div>
   <div class="loading-text">Connecting to database...</div>
 </div>
@@ -278,32 +278,24 @@
 
 <script>
 /* ════════════════════════════════════════
-   CONFIG — your Supabase keys are set here
-   Everyone who opens this page uses these
+   CONFIG
 ════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════════════
-   INSTRUCTIONS: Replace these with YOUR Supabase values
-   1. Go to Supabase → Settings → API
-   2. Copy "Project URL" and paste below
-   3. Copy "anon public" key (starts with eyJ...) and paste below
-   ═══════════════════════════════════════════════════════ */
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_KEY = 'eyJ_YOUR_ANON_KEY_HERE';
+const SUPABASE_URL = 'https://fpnjwqsvcpxpwypghohi.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_SOW_WQWl4T0wRtxSvA-P6Q_vxZGveBp';
 
-/* ── PASSWORD ──
-   The hash below is a pre-computed SHA-256 of your chosen password.
-   To generate a new hash, open your browser console and run:
-     crypto.subtle.digest('SHA-256', new TextEncoder().encode('YourPasswordHere'))
-       .then(b => console.log(Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')))
-   Then paste the result into CORRECT_HASH below.
-   This way your password NEVER appears in the source code.
+/* ── PASSWORD (SHA-256 hash of "Curated2026") ──
+   Password never appears in source code. To change it:
+   1. Open browser console (F12)
+   2. Run: crypto.subtle.digest('SHA-256', new TextEncoder().encode('YourNewPassword'))
+        .then(b=>console.log(Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')))
+   3. Replace the hash below with the output
 */
+const CORRECT_HASH = '51d7d2a5d684c038299ec70aaf0f5e8173c60ae003f11598197ba211156ceaca';
+
 async function hashPass(p) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(p));
   return Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2,'0')).join('');
 }
-// Default hash = SHA-256 of "Curated2026" — change this to your own!
-const CORRECT_HASH = 'GENERATE_YOUR_HASH_AND_PASTE_HERE';
 
 /* ── STATE ── */
 let db = null;
@@ -313,17 +305,16 @@ let managingLocId = null;
 let dragId        = null;
 
 /* ════════════════════════════════════════
-   INIT
+   INIT — DB only connects AFTER unlock
 ════════════════════════════════════════ */
 async function init() {
   const stored = localStorage.getItem('cy_unlocked');
   if (stored === CORRECT_HASH) {
     document.getElementById('lockScreen').classList.add('unlocked');
+    document.getElementById('loadingOverlay').classList.remove('hidden');
     await connectDB();
-  } else {
-    document.getElementById('lockScreen').classList.remove('unlocked');
-    document.getElementById('loadingOverlay').classList.add('hidden');
   }
+  // Otherwise stays on lock screen, no DB connection yet
 }
 
 async function connectDB() {
@@ -337,7 +328,7 @@ async function connectDB() {
     console.error('DB connection error:', e);
     document.getElementById('loadingOverlay').innerHTML =
       `<div style="color:var(--red);font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:1px;text-align:center;padding:20px">
-        Connection failed.<br><span style="color:var(--text3);font-size:12px">Check your Supabase URL and key in the HTML file.</span>
+        Connection failed.<br><span style="color:var(--text3);font-size:12px">Check your Supabase URL and publishable key.</span>
       </div>`;
   }
 }
@@ -386,8 +377,9 @@ async function tryUnlock() {
   if (hashed === CORRECT_HASH) {
     if (document.getElementById('lockRemember').checked) localStorage.setItem('cy_unlocked', CORRECT_HASH);
     document.getElementById('lockScreen').classList.add('unlocked');
+    document.getElementById('loadingOverlay').classList.remove('hidden');
     err.textContent = '';
-    if (!db) connectDB();
+    await connectDB();
   } else {
     inp.classList.remove('shake');
     void inp.offsetWidth;
@@ -452,7 +444,7 @@ async function saveLocation() {
   setSyncing(true);
   const { error } = await db.from('locations').insert({ name, sort_order: state.locations.length });
   setSyncing(false);
-  if (error) { toast('Error adding location'); return; }
+  if (error) { toast('Error adding location'); console.error(error); return; }
   closeLocModal();
   toast('Location added: ' + name);
 }
@@ -519,7 +511,6 @@ async function doDeleteLocation() {
   const active = state.cars.filter(c => c.location_id === managingLocId && !c.sold).length;
   if (active > 0) { toast('Move all cars first'); return; }
   setSyncing(true);
-  // Null out location_id on any sold cars linked here
   await db.from('cars').update({ location_id: null }).eq('location_id', managingLocId);
   await db.from('locations').delete().eq('id', managingLocId);
   setSyncing(false);
