@@ -13,6 +13,7 @@
     --border: #2d3347; --accent: #e8a020; --accent2: #c27d10;
     --text: #e8e9ee; --text2: #8890a8; --text3: #555e78;
     --red: #e84040; --red-dim: rgba(232,64,64,.12); --green: #2ec97e;
+    --blue: #4a9eff; --blue-dim: rgba(74,158,255,.12);
     --col-w: 265px; --radius: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,10 +40,10 @@
 
   /* ── HEADER ── */
   header { background:var(--surface);border-bottom:2px solid var(--accent);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:62px;position:relative;z-index:100;flex-shrink:0; }
-  .logo { font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);min-width:160px; }
+  .logo { font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);min-width:140px; }
   .logo span { color:var(--text2);font-weight:400; }
   .nav-tabs { display:flex;align-items:center;gap:4px;position:absolute;left:50%;transform:translateX(-50%); }
-  .nav-tab { font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:7px 20px;border-radius:6px;border:1px solid transparent;cursor:pointer;background:transparent;color:var(--text3);transition:all .15s;display:flex;align-items:center;gap:8px; }
+  .nav-tab { font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:7px 16px;border-radius:6px;border:1px solid transparent;cursor:pointer;background:transparent;color:var(--text3);transition:all .15s;display:flex;align-items:center;gap:8px; }
   .nav-tab:hover { color:var(--text2);border-color:var(--border); }
   .nav-tab.active { background:var(--bg);color:var(--accent);border-color:var(--accent); }
   .nav-badge { font-size:11px;background:var(--border);color:var(--text2);border-radius:10px;padding:1px 7px;font-weight:700;font-family:'Barlow Condensed',sans-serif; }
@@ -84,7 +85,6 @@
   .loc-tab .count-badge { font-size:11px;background:var(--border);color:var(--text2);border-radius:10px;padding:1px 7px;font-weight:700; }
   .add-loc-btn { padding:8px 12px 10px;border-radius:6px 6px 0 0;background:transparent;border:1px dashed var(--border);border-bottom:none;color:var(--text3);cursor:pointer;font-size:18px;line-height:1;transition:color .15s,border-color .15s; }
   .add-loc-btn:hover { color:var(--accent);border-color:var(--accent); }
-
   .columns-area { flex:1;display:flex;overflow-x:auto;background:var(--bg); }
   .columns-area::-webkit-scrollbar { height:6px; }
   .columns-area::-webkit-scrollbar-thumb { background:var(--border);border-radius:3px; }
@@ -111,6 +111,7 @@
   .car-actions { display:flex;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);justify-content:flex-end; }
   .car-drag-handle { position:absolute;top:10px;right:10px;color:var(--text3);font-size:14px;cursor:grab; }
   .car-loc-label { font-size:10px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase;margin-top:8px; }
+  .car-date-label { font-size:10px;color:var(--text3);font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;margin-top:4px; }
   .sold-tag { display:inline-block;background:rgba(46,201,126,.12);color:var(--green);font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:2px 7px;border-radius:3px;margin-top:8px; }
 
   /* ── FLEET / SOLD VIEW ── */
@@ -124,6 +125,23 @@
   .fleet-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-bottom:32px; }
   .empty-fleet { text-align:center;padding:60px 12px;color:var(--text3);font-size:15px;line-height:1.8; }
   .empty-fleet .em-icon { font-size:36px;margin-bottom:12px; }
+
+  /* ── HISTORY VIEW ── */
+  .history-list { display:flex;flex-direction:column;gap:1px; }
+  .history-row { display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--border);font-size:13px;transition:background .1s; }
+  .history-row:hover { background:var(--surface2); }
+  .history-time { font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--text3);letter-spacing:.5px;min-width:140px;flex-shrink:0; }
+  .history-action { font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:4px;flex-shrink:0;min-width:80px;text-align:center; }
+  .history-action.added { background:rgba(46,201,126,.12);color:var(--green); }
+  .history-action.moved { background:var(--blue-dim);color:var(--blue); }
+  .history-action.edited { background:rgba(232,160,32,.12);color:var(--accent); }
+  .history-action.sold { background:rgba(232,64,64,.12);color:var(--red); }
+  .history-action.restored { background:rgba(46,201,126,.12);color:var(--green); }
+  .history-action.deleted { background:rgba(232,64,64,.12);color:var(--red); }
+  .history-action.snapshot { background:rgba(74,158,255,.12);color:var(--blue); }
+  .history-detail { color:var(--text2);flex:1;line-height:1.4; }
+  .history-detail strong { color:var(--text);font-weight:600; }
+  .snapshot-btn-row { display:flex;gap:10px;align-items:center;flex-wrap:wrap; }
 
   /* ── MODALS ── */
   .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s; }
@@ -159,13 +177,11 @@
 </head>
 <body>
 
-<!-- ══ LOADING ══ -->
 <div id="loadingOverlay" class="hidden">
   <div class="loading-spinner"></div>
   <div class="loading-text">Connecting to database...</div>
 </div>
 
-<!-- ══ LOCK ══ -->
 <div id="lockScreen">
   <div class="lock-box">
     <div class="lock-logo">CarYard <span>Manager</span></div>
@@ -175,20 +191,17 @@
     <input class="lock-input" id="lockInput" type="password" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')tryUnlock()">
     <div class="lock-error" id="lockError"></div>
     <button class="lock-btn" onclick="tryUnlock()">Unlock</button>
-    <label class="lock-remember">
-      <input type="checkbox" id="lockRemember" checked>
-      Keep me unlocked on this device
-    </label>
+    <label class="lock-remember"><input type="checkbox" id="lockRemember" checked> Keep me unlocked on this device</label>
   </div>
 </div>
 
-<!-- ══ HEADER ══ -->
 <header>
   <div class="logo">CarYard <span>Manager</span></div>
   <div class="nav-tabs">
     <button class="nav-tab active" id="navDash" onclick="switchView('dashboard')">Dashboard</button>
-    <button class="nav-tab" id="navFleet" onclick="switchView('fleet')">Fleet Registry <span class="nav-badge" id="navFleetCount">0</span></button>
+    <button class="nav-tab" id="navFleet" onclick="switchView('fleet')">Fleet <span class="nav-badge" id="navFleetCount">0</span></button>
     <button class="nav-tab" id="navSold" onclick="switchView('sold')">Sold <span class="nav-badge" id="navSoldCount">0</span></button>
+    <button class="nav-tab" id="navHistory" onclick="switchView('history')">History <span class="nav-badge" id="navHistoryCount">0</span></button>
   </div>
   <div class="header-actions">
     <div class="sync-dot" id="syncDot" title="Live sync active"></div>
@@ -197,13 +210,11 @@
   </div>
 </header>
 
-<!-- ══ DASHBOARD ══ -->
 <div class="view active" id="viewDashboard">
   <div class="locations-header" id="locTabs"></div>
   <div class="columns-area" id="colArea"></div>
 </div>
 
-<!-- ══ FLEET ══ -->
 <div class="view" id="viewFleet">
   <div class="fleet-view-inner">
     <div class="fleet-toolbar">
@@ -213,13 +224,24 @@
   </div>
 </div>
 
-<!-- ══ SOLD ══ -->
 <div class="view" id="viewSold">
   <div class="fleet-view-inner">
     <div class="fleet-toolbar">
       <div class="fleet-heading">Sold Cars <span id="soldSubtitle"></span></div>
     </div>
     <div id="soldContent"></div>
+  </div>
+</div>
+
+<div class="view" id="viewHistory">
+  <div class="fleet-view-inner">
+    <div class="fleet-toolbar">
+      <div class="fleet-heading">History Log <span id="historySubtitle"></span></div>
+      <div class="snapshot-btn-row">
+        <button class="btn btn-ghost" onclick="takeSnapshot()">📸 Save Snapshot</button>
+      </div>
+    </div>
+    <div id="historyContent"></div>
   </div>
 </div>
 
@@ -273,7 +295,17 @@
   </div>
 </div>
 
-<!-- ══ TOAST ══ -->
+<!-- ══ SNAPSHOT MODAL ══ -->
+<div class="modal-overlay" id="snapshotModal">
+  <div class="modal" style="width:600px;max-width:96vw;max-height:80vh;overflow-y:auto;">
+    <h2 id="snapshotTitle">Snapshot</h2>
+    <div id="snapshotBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeSnapshotModal()">Close</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -283,13 +315,6 @@
 const SUPABASE_URL = 'https://fpnjwqsvcpxpwypghohi.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_SOW_WQWl4T0wRtxSvA-P6Q_vxZGveBp';
 
-/* ── PASSWORD (SHA-256 hash of "Curated2026") ──
-   Password never appears in source code. To change it:
-   1. Open browser console (F12)
-   2. Run: crypto.subtle.digest('SHA-256', new TextEncoder().encode('YourNewPassword'))
-        .then(b=>console.log(Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')))
-   3. Replace the hash below with the output
-*/
 const CORRECT_HASH = '51d7d2a5d684c038299ec70aaf0f5e8173c60ae003f11598197ba211156ceaca';
 
 async function hashPass(p) {
@@ -297,15 +322,27 @@ async function hashPass(p) {
   return Array.from(new Uint8Array(buf)).map(x => x.toString(16).padStart(2,'0')).join('');
 }
 
+function auDate(d) {
+  if (!d) return '';
+  const dt = (d instanceof Date) ? d : new Date(d);
+  return dt.toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric' });
+}
+function auDateTime(d) {
+  if (!d) return '';
+  const dt = (d instanceof Date) ? d : new Date(d);
+  return dt.toLocaleDateString('en-AU', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true });
+}
+function nowISO() { return new Date().toISOString(); }
+
 /* ── STATE ── */
 let db = null;
-let state = { locations: [], cars: [] };
+let state = { locations: [], cars: [], history: [] };
 let editingCarId  = null;
 let managingLocId = null;
 let dragId        = null;
 
 /* ════════════════════════════════════════
-   INIT — DB only connects AFTER unlock
+   INIT
 ════════════════════════════════════════ */
 async function init() {
   const stored = localStorage.getItem('cy_unlocked');
@@ -314,7 +351,6 @@ async function init() {
     document.getElementById('loadingOverlay').classList.remove('hidden');
     await connectDB();
   }
-  // Otherwise stays on lock screen, no DB connection yet
 }
 
 async function connectDB() {
@@ -334,11 +370,14 @@ async function connectDB() {
 }
 
 /* ── LOAD ALL ── */
+let loadDebounce = null;
 async function loadAll() {
+  clearTimeout(loadDebounce);
   setSyncing(true);
-  const [locsRes, carsRes] = await Promise.all([
+  const [locsRes, carsRes, histRes] = await Promise.all([
     db.from('locations').select('*').order('sort_order').order('created_at'),
-    db.from('cars').select('*').order('created_at')
+    db.from('cars').select('*').order('created_at'),
+    db.from('history').select('*').order('created_at', { ascending: false }).limit(200)
   ]);
   if (locsRes.error || carsRes.error) {
     console.error('Load error:', locsRes.error || carsRes.error);
@@ -349,23 +388,56 @@ async function loadAll() {
   }
   state.locations = locsRes.data || [];
   state.cars      = carsRes.data || [];
+  state.history   = histRes.data || [];
   setSyncing(false);
   document.getElementById('loadingOverlay').classList.add('hidden');
   render();
 }
 
+function debouncedLoadAll() {
+  clearTimeout(loadDebounce);
+  loadDebounce = setTimeout(() => loadAll(), 300);
+}
+
 /* ── REALTIME ── */
+let realtimeChannel = null;
+
 function subscribeRealtime() {
-  db.channel('caryard-changes')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'locations' }, () => loadAll())
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'cars' },      () => loadAll())
-    .subscribe(status => {
-      if (status === 'SUBSCRIBED') setSyncing(false);
+  if (realtimeChannel) db.removeChannel(realtimeChannel);
+
+  realtimeChannel = db.channel('caryard-sync')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'locations' }, () => debouncedLoadAll())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'cars' },      () => debouncedLoadAll())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'history' },   () => debouncedLoadAll())
+    .subscribe((status, err) => {
+      console.log('Realtime:', status, err || '');
+      if (status === 'SUBSCRIBED') {
+        setSyncing(false);
+        document.getElementById('syncDot').title = 'Live sync active';
+      } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        document.getElementById('syncDot').className = 'sync-dot error';
+        document.getElementById('syncDot').title = 'Sync error — retrying...';
+        setTimeout(() => subscribeRealtime(), 3000);
+      } else if (status === 'CLOSED') {
+        document.getElementById('syncDot').className = 'sync-dot error';
+        document.getElementById('syncDot').title = 'Sync disconnected';
+      }
     });
 }
 
 function setSyncing(on) {
   document.getElementById('syncDot').className = 'sync-dot' + (on ? ' syncing' : '');
+}
+
+/* ── HISTORY LOG ── */
+async function logHistory(action, detail, snapshot_data) {
+  const entry = { action, detail, created_at: nowISO() };
+  if (snapshot_data) entry.snapshot_data = snapshot_data;
+  await db.from('history').insert(entry);
+}
+
+function locName(id) {
+  return state.locations.find(l => l.id === id)?.name || 'Unknown';
 }
 
 /* ── PASSWORD ── */
@@ -392,11 +464,7 @@ async function tryUnlock() {
 
 /* ── EXPORT ── */
 function exportData() {
-  const out = {
-    exportDate: new Date().toISOString(),
-    locations: state.locations,
-    cars: state.cars
-  };
+  const out = { exportDate: new Date().toISOString(), locations: state.locations, cars: state.cars, history: state.history };
   const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -405,7 +473,6 @@ function exportData() {
   toast('Backup exported ✓');
 }
 
-/* ── TOAST ── */
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -416,15 +483,17 @@ function toast(msg) {
 
 /* ── VIEWS ── */
 function switchView(v) {
-  ['dashboard','fleet','sold'].forEach(id => {
+  ['dashboard','fleet','sold','history'].forEach(id => {
     const cap = id.charAt(0).toUpperCase() + id.slice(1);
     document.getElementById('view'+cap).classList.toggle('active', v===id);
   });
   document.getElementById('navDash').classList.toggle('active', v==='dashboard');
   document.getElementById('navFleet').classList.toggle('active', v==='fleet');
   document.getElementById('navSold').classList.toggle('active', v==='sold');
+  document.getElementById('navHistory').classList.toggle('active', v==='history');
   if (v==='fleet') renderFleet();
   if (v==='sold')  renderSold();
+  if (v==='history') renderHistory();
 }
 
 /* ════════════════════════════════════════
@@ -443,10 +512,11 @@ async function saveLocation() {
   if (state.locations.some(l => l.name.toLowerCase()===name.toLowerCase())) { toast('Location already exists'); return; }
   setSyncing(true);
   const { error } = await db.from('locations').insert({ name, sort_order: state.locations.length });
-  setSyncing(false);
-  if (error) { toast('Error adding location'); console.error(error); return; }
+  if (error) { setSyncing(false); toast('Error adding location'); console.error(error); return; }
   closeLocModal();
   toast('Location added: ' + name);
+  await logHistory('added', `Location "${name}" created`);
+  await loadAll();
 }
 
 function openManageLoc(id) {
@@ -464,17 +534,14 @@ function buildManageModal() {
   if (!loc) return;
   const active = state.cars.filter(c => c.location_id === managingLocId && !c.sold).length;
   const total  = state.cars.filter(c => c.location_id === managingLocId).length;
-
   document.getElementById('mlTitle').textContent = loc.name;
   document.getElementById('mlRename').value = loc.name;
   document.getElementById('mlStatActive').textContent = active;
   document.getElementById('mlStatActive').className = 'loc-stat-num' + (active > 0 ? ' blocked' : '');
   document.getElementById('mlStatTotal').textContent = total;
-
   const deleteBtn = document.getElementById('mlDeleteBtn');
   deleteBtn.disabled = true;
   const body = document.getElementById('mlDeleteBody');
-
   if (state.locations.length <= 1) {
     body.innerHTML = `<div class="info-box">You cannot delete the last remaining location. Add another first.</div>`;
     return;
@@ -501,21 +568,24 @@ async function doRenameLocation() {
   if (state.locations.some(l => l.name.toLowerCase()===newName.toLowerCase() && l.id!==managingLocId)) { toast('Name already taken'); return; }
   setSyncing(true);
   await db.from('locations').update({ name: newName }).eq('id', managingLocId);
-  setSyncing(false);
   toast(`Renamed to "${newName}"`);
   closeManageLocModal();
+  await logHistory('edited', `Location renamed: "${loc.name}" → "${newName}"`);
+  await loadAll();
 }
 
 async function doDeleteLocation() {
   if (!managingLocId) return;
+  const loc = state.locations.find(l => l.id === managingLocId);
   const active = state.cars.filter(c => c.location_id === managingLocId && !c.sold).length;
   if (active > 0) { toast('Move all cars first'); return; }
   setSyncing(true);
   await db.from('cars').update({ location_id: null }).eq('location_id', managingLocId);
   await db.from('locations').delete().eq('id', managingLocId);
-  setSyncing(false);
   closeManageLocModal();
   toast('Location deleted');
+  await logHistory('deleted', `Location "${loc?.name}" deleted`);
+  await loadAll();
 }
 
 /* ════════════════════════════════════════
@@ -557,14 +627,23 @@ async function saveCar() {
   const location_id = document.getElementById('fLocation').value;
   if (!brand || !model || !plate) { toast('Please fill in all fields'); return; }
   setSyncing(true);
+  const now = nowISO();
   if (editingCarId) {
-    await db.from('cars').update({ brand, model, plate, location_id }).eq('id', editingCarId);
+    const old = state.cars.find(c => c.id === editingCarId);
+    const locChanged = old && old.location_id !== location_id;
+    const updateData = { brand, model, plate, location_id };
+    if (locChanged) updateData.moved_date = now;
+    await db.from('cars').update(updateData).eq('id', editingCarId);
+    closeCarModal();
+    toast('Car updated');
+    await logHistory('edited', `${brand} ${model} (${plate}) edited${locChanged ? ' → moved to ' + locName(location_id) : ''}`);
   } else {
-    await db.from('cars').insert({ brand, model, plate, location_id, sold: false });
+    await db.from('cars').insert({ brand, model, plate, location_id, sold: false, moved_date: now });
+    closeCarModal();
+    toast('Car added ✓');
+    await logHistory('added', `${brand} ${model} (${plate}) added to ${locName(location_id)}`);
   }
-  setSyncing(false);
-  closeCarModal();
-  toast(editingCarId ? 'Car updated' : 'Car added ✓');
+  await loadAll();
 }
 
 async function markSold(id) {
@@ -575,10 +654,12 @@ async function markSold(id) {
     sold: true,
     sold_date: new Date().toLocaleDateString('en-AU'),
     prev_location_id: car.location_id,
-    location_id: null
+    location_id: null,
+    moved_date: null
   }).eq('id', id);
-  setSyncing(false);
   toast('Marked as sold');
+  await logHistory('sold', `${car.brand} ${car.model} (${car.plate}) marked sold from ${locName(car.location_id)}`);
+  await loadAll();
 }
 
 async function restoreCar(id) {
@@ -589,9 +670,10 @@ async function restoreCar(id) {
     : (state.locations[0]?.id || null);
   const loc = state.locations.find(l=>l.id===target);
   setSyncing(true);
-  await db.from('cars').update({ sold: false, sold_date: null, location_id: target, prev_location_id: null }).eq('id', id);
-  setSyncing(false);
+  await db.from('cars').update({ sold: false, sold_date: null, location_id: target, prev_location_id: null, moved_date: nowISO() }).eq('id', id);
   toast(`Restored to ${loc?.name || 'yard'}`);
+  await logHistory('restored', `${car.brand} ${car.model} (${car.plate}) restored to ${loc?.name || 'yard'}`);
+  await loadAll();
 }
 
 async function deleteCar(id) {
@@ -600,9 +682,72 @@ async function deleteCar(id) {
   if (!window.confirm(`Permanently delete ${car.brand} ${car.model} (${car.plate})?`)) return;
   setSyncing(true);
   await db.from('cars').delete().eq('id', id);
-  setSyncing(false);
   toast('Car deleted');
+  await logHistory('deleted', `${car.brand} ${car.model} (${car.plate}) permanently deleted`);
+  await loadAll();
 }
+
+/* ════════════════════════════════════════
+   SNAPSHOTS
+════════════════════════════════════════ */
+async function takeSnapshot() {
+  setSyncing(true);
+  const snap = {
+    locations: state.locations.map(l => ({ id: l.id, name: l.name })),
+    cars: state.cars.map(c => ({
+      brand: c.brand, model: c.model, plate: c.plate,
+      location: locName(c.location_id),
+      sold: c.sold, sold_date: c.sold_date,
+      moved_date: c.moved_date
+    }))
+  };
+  const active = state.cars.filter(c => !c.sold).length;
+  const sold = state.cars.filter(c => c.sold).length;
+  await logHistory('snapshot', `Snapshot saved — ${active} active, ${sold} sold`, JSON.stringify(snap));
+  toast('Snapshot saved ✓');
+  await loadAll();
+}
+
+function viewSnapshot(idx) {
+  const entry = state.history[idx];
+  if (!entry || !entry.snapshot_data) return;
+  let snap;
+  try { snap = JSON.parse(entry.snapshot_data); } catch(e) { toast('Error reading snapshot'); return; }
+  document.getElementById('snapshotTitle').textContent = 'Snapshot — ' + auDateTime(entry.created_at);
+  const active = snap.cars.filter(c => !c.sold);
+  const sold = snap.cars.filter(c => c.sold);
+  let html = `<div style="margin-bottom:16px;font-size:13px;color:var(--text2)">${active.length} active, ${sold.length} sold at time of snapshot</div>`;
+  if (active.length) {
+    const byLoc = {};
+    active.forEach(c => {
+      if (!byLoc[c.location]) byLoc[c.location] = [];
+      byLoc[c.location].push(c);
+    });
+    Object.entries(byLoc).forEach(([loc, cars]) => {
+      html += `<div class="fleet-section-title" style="margin-top:16px"><span>${loc}</span><span>${cars.length}</span></div>`;
+      cars.forEach(c => {
+        html += `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+          <span class="car-plate" style="font-size:12px;padding:2px 8px">${c.plate}</span>
+          <span style="font-size:14px;color:var(--text)">${c.brand} ${c.model}</span>
+          ${c.moved_date ? `<span style="font-size:10px;color:var(--text3);margin-left:auto">placed ${auDate(c.moved_date)}</span>` : ''}
+        </div>`;
+      });
+    });
+  }
+  if (sold.length) {
+    html += `<div class="fleet-section-title" style="margin-top:20px"><span>Sold</span><span>${sold.length}</span></div>`;
+    sold.forEach(c => {
+      html += `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span class="car-plate" style="font-size:12px;padding:2px 8px">${c.plate}</span>
+        <span style="font-size:14px;color:var(--text2)">${c.brand} ${c.model}</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">${c.sold_date || ''}</span>
+      </div>`;
+    });
+  }
+  document.getElementById('snapshotBody').innerHTML = html;
+  document.getElementById('snapshotModal').classList.add('show');
+}
+function closeSnapshotModal() { document.getElementById('snapshotModal').classList.remove('show'); }
 
 /* ════════════════════════════════════════
    DRAG & DROP
@@ -625,11 +770,20 @@ async function onDrop(e, locId) {
   if (!dragId) return;
   const car = state.cars.find(c => c.id === dragId);
   if (!car || car.location_id === locId) return;
+  const fromLoc = locName(car.location_id);
+  const toLoc = locName(locId);
+  // Optimistic local update
+  car.location_id = locId;
+  car.sold = false;
+  car.sold_date = null;
+  car.moved_date = nowISO();
+  render();
+  // Persist
   setSyncing(true);
-  await db.from('cars').update({ location_id: locId, sold: false, sold_date: null }).eq('id', dragId);
-  setSyncing(false);
-  const loc = state.locations.find(l => l.id === locId);
-  toast(`Moved to ${loc?.name || 'location'}`);
+  await db.from('cars').update({ location_id: locId, sold: false, sold_date: null, moved_date: car.moved_date }).eq('id', dragId);
+  toast(`Moved to ${toLoc}`);
+  await logHistory('moved', `${car.brand} ${car.model} (${car.plate}) moved: ${fromLoc} → ${toLoc}`);
+  await loadAll();
 }
 
 /* ════════════════════════════════════════
@@ -640,9 +794,14 @@ function carCardHTML(car, mode) {
   const isSoldTab = mode === 'sold';
   const draggable = inColumn;
 
-  const locName = state.locations.find(l=>l.id===car.location_id)?.name;
-  const locLabel = (mode==='fleet-active' && locName)
-    ? `<div class="car-loc-label">📍 ${locName}</div>` : '';
+  const lName = state.locations.find(l=>l.id===car.location_id)?.name;
+  const locLabel = (mode==='fleet-active' && lName)
+    ? `<div class="car-loc-label">📍 ${lName}</div>` : '';
+
+  // Show date placed in this location
+  const movedLabel = (car.moved_date && !car.sold)
+    ? `<div class="car-date-label">📅 Placed ${auDate(car.moved_date)}</div>` : '';
+
   const soldBadge = car.sold
     ? `<div class="sold-tag">SOLD${car.sold_date ? ' · '+car.sold_date : ''}</div>` : '';
 
@@ -665,7 +824,7 @@ function carCardHTML(car, mode) {
     <div class="car-brand">${car.brand}</div>
     <div class="car-model">${car.model}</div>
     <div class="car-plate">${car.plate}</div>
-    ${locLabel}${soldBadge}${actions}
+    ${locLabel}${movedLabel}${soldBadge}${actions}
   </div>`;
 }
 
@@ -679,6 +838,7 @@ function render() {
   const active = document.querySelector('.view.active');
   if (active?.id==='viewFleet') renderFleet();
   if (active?.id==='viewSold')  renderSold();
+  if (active?.id==='viewHistory') renderHistory();
 }
 
 function updateNavBadges() {
@@ -686,6 +846,7 @@ function updateNavBadges() {
   const sold   = state.cars.filter(c=>c.sold).length;
   document.getElementById('navFleetCount').textContent = active;
   document.getElementById('navSoldCount').textContent  = sold;
+  document.getElementById('navHistoryCount').textContent = state.history.length;
 }
 
 function renderTabs() {
@@ -751,12 +912,29 @@ function renderSold() {
     : `<div class="empty-fleet"><div class="em-icon">✅</div>No sold cars yet.</div>`;
 }
 
+function renderHistory() {
+  document.getElementById('historySubtitle').textContent = `${state.history.length} entries`;
+  const content = document.getElementById('historyContent');
+  if (!state.history.length) {
+    content.innerHTML = `<div class="empty-fleet"><div class="em-icon">📋</div>No history yet. Changes will be logged here automatically.</div>`;
+    return;
+  }
+  content.innerHTML = `<div class="history-list">${state.history.map((h, i) => {
+    const isSnap = h.action === 'snapshot';
+    return `<div class="history-row">
+      <div class="history-time">${auDateTime(h.created_at)}</div>
+      <div class="history-action ${h.action}">${h.action}</div>
+      <div class="history-detail">${h.detail || ''}${isSnap ? ` <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="viewSnapshot(${i})">View</button>` : ''}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
 /* ── KEYBOARD ── */
 document.addEventListener('keydown', e => {
-  if (e.key==='Escape') { closeCarModal(); closeLocModal(); closeManageLocModal(); }
+  if (e.key==='Escape') { closeCarModal(); closeLocModal(); closeManageLocModal(); closeSnapshotModal(); }
   if (e.key==='Enter' && document.getElementById('addCarModal').classList.contains('show')) saveCar();
   if (e.key==='Enter' && document.getElementById('addLocModal').classList.contains('show')) saveLocation();
-  if (e.key==='Enter' && document.getElementById('lockScreen').classList.contains('unlocked')===false) tryUnlock();
+  if (e.key==='Enter' && !document.getElementById('lockScreen').classList.contains('unlocked')) tryUnlock();
 });
 
 /* ── START ── */
